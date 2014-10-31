@@ -1,6 +1,7 @@
 package
 {
 	import flash.display.Sprite;
+	import flash.events.Event;
 	
 	/**
 	 * MatchLover
@@ -14,6 +15,19 @@ package
 		public function MatchLover()
 		{
 			super();
+			if( null != stage ) 
+			{
+				initUI();
+				return;
+			}
+			
+			addEventListener( Event.ADDED_TO_STAGE, initUI );
 		}
+		private function initUI( e:Event = null ):void
+		{
+			if( null != e )
+			{
+				removeEventListener( Event.ADDED_TO_STAGE, initUI );
+			}
 	}
 }
