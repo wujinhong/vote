@@ -17,10 +17,25 @@ package ui
 	 */
 	public class VoteRole extends Sprite
 	{
-		public static const ROLE_WIDTH:Number = 250;
-		public static const ROLE_HEIGHT:Number = 360;
+		public static const ROLE_WIDTH:Number = 444;
+		public static const ROLE_HEIGHT:Number = 650;
 		public static const DURATION:Number = 3;
+		/**
+		 *60 
+		 */		
 		public static const ROTATION_Y:Number = 60;
+		/**
+		 * 40
+		 */		
+		public static const ROTATION_Y1:Number = 40;
+		/**
+		 *-40 
+		 */		
+		public static const ROTATION_Y2:Number = -40;
+		/**
+		 *-60 
+		 */		
+		public static const ROTATION_Y3:Number = -60;
 		/**
 		 *从左到右位置（1~5） ,1或5的位置
 		 */		
@@ -48,12 +63,14 @@ package ui
 			_func = func;
 			_roleIndex = roleIndex;
 			_bitmap = new Bitmap( ImageLoader.get().getBitmapData( Vote.USER[ roleIndex ].icon ) );
-			_bitmap.scaleX = ROLE_WIDTH / _bitmap.width;
-			_bitmap.scaleY = ROLE_HEIGHT / _bitmap.height;
+			/*_bitmap.scaleX = ROLE_WIDTH / _bitmap.width;
+			_bitmap.scaleY = ROLE_HEIGHT / _bitmap.height;*/
+			_bitmap.width = ROLE_WIDTH;
+			_bitmap.height = ROLE_HEIGHT;
 			_bitmap.x = -_bitmap.width / 2;
-			_bitmap.y += 4;
+			_bitmap.y += 8;
 			/****从左到右位置（1~5），初使化位置1***************************/
-			x =  ( STAGE_1_5_X + 3 ) * ROLE_WIDTH;
+			x =  ( STAGE_1_5_X + 1 ) * ROLE_WIDTH;
 			alpha = 0;
 			/****从左到右位置（1~5），初使化位置1***************************/
 			if( Vote.USER[ _roleIndex ].icon != Vote.EMPTY_ROLE )
@@ -71,14 +88,20 @@ package ui
 			}
 			addChild( _bitmap );
 			cacheAsBitmap = true;
-			TweenLite.to( this, DURATION, { x:STAGE_1_5_X * ROLE_WIDTH, alpha:1, rotationY:ROTATION_Y, onComplete:onComplete1 } );//走向位置1
+			rotationY = ROTATION_Y;
+			TweenLite.to( this, DURATION, { x:STAGE_1_5_X * ROLE_WIDTH, alpha:1, onComplete:onComplete1 } );//走向位置1
+		}
+		private function setOrigin():void
+		{
+//			_bitmap.scaleX = _bitmap.scaleY = 1;
+			scaleX = scaleY = 1;
 		}
 		/**
 		 *从左到右位置（1~5），到达位置1
 		 */
 		private function onComplete1():void
 		{
-			TweenLite.to( this, DURATION, { x:STAGE_2_4_X * ROLE_WIDTH, onComplete:onComplete2 } );//走向位置2
+			TweenLite.to( this, DURATION, { x:STAGE_2_4_X * ROLE_WIDTH, rotationY:ROTATION_Y1, onComplete:onComplete2 } );//走向位置2
 		}
 		/**
 		 *从左到右位置（1~5），到达位置2
@@ -98,7 +121,8 @@ package ui
 		 */
 		private function onComplete3():void
 		{
-			TweenLite.to( this, DURATION, { rotationY:-ROTATION_Y, x:-STAGE_2_4_X * ROLE_WIDTH, onComplete:onComplete4 } );//走向位置4
+			setOrigin();
+			TweenLite.to( this, DURATION, { rotationY:ROTATION_Y2, x:-STAGE_2_4_X * ROLE_WIDTH, onComplete:onComplete4 } );//走向位置4
 			
 			if( null != _roleInfo )
 			{
@@ -128,7 +152,9 @@ package ui
 		 */
 		private function onComplete4():void
 		{
-			TweenLite.to( this, DURATION, { x:-STAGE_1_5_X * ROLE_WIDTH, onComplete:onComplete5 } );//走向位置5
+			setOrigin();
+			rotationY = ROTATION_Y2;
+			TweenLite.to( this, DURATION, { rotationY:ROTATION_Y3, x:-STAGE_1_5_X * ROLE_WIDTH, onComplete:onComplete5 } );//走向位置5
 			if( null != _roleInfo )
 			{
 				_roleInfo.alpha = 0;
@@ -139,10 +165,13 @@ package ui
 		 */
 		private function onComplete5():void
 		{
-			TweenLite.to( this, DURATION, { x:-( STAGE_1_5_X + 3 ) * ROLE_WIDTH, alpha:0, onComplete:onFinalComplete } );
+			setOrigin();
+			rotationY = ROTATION_Y3;
+			TweenLite.to( this, DURATION, { x:-( STAGE_1_5_X + 1 ) * ROLE_WIDTH, alpha:0, onComplete:onFinalComplete } );
 		}
 		private function onFinalComplete():void
 		{
+			setOrigin();
 			if( null != parent )
 			{
 				parent.removeChild( this );

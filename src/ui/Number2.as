@@ -23,7 +23,7 @@ package ui
 		private var _func:Function;
 		private var _motionIndex:uint = 0;
 		private var _motionList:Vector.<Object> = new <Object>[
-			{ scaleX:1.2, scaleY:1.2, onComplete:onMotionEnd },
+			{ scaleX:1, scaleY:1, onComplete:onMotionEnd },
 			{ scaleX:0.8, scaleY:0.8, onComplete:onMotionEnd },
 			{ scaleX:1, scaleY:1, onComplete:onMotionEnd },
 			{ scaleX:0.9, scaleY:0.9, onComplete:onMotionEnd },
@@ -37,6 +37,7 @@ package ui
 			_bitmap = new Bitmap( ImageLoader.get().getBitmapData( info.icon ) );
 
 			this.circle.image.addChild( _bitmap );
+			circle.scaleX = circle.scaleY = 0.2;
 			/*circle.scaleX = circle.scaleY = 0.075;
 			_animator = new Animator( MotionXML.xmls[ _motionIndex ], this.circle );
 			_animator.addEventListener( MotionEvent.MOTION_END, onMotionEnd );
@@ -49,8 +50,8 @@ package ui
 			this.info.scoreTF.text = info.vote_num + "票";
 			
 			info.alpha = 0;
-			crown.visible = false;
-			TweenLite.to( circle, MotionXML.TREMBLE, _motionList[ _motionIndex ] );
+//			crown.visible = false;
+			TweenLite.to( circle, MotionXML.TREMBLE2, _motionList[ _motionIndex ] );
 		}
 		
 		/**
@@ -60,7 +61,7 @@ package ui
 		{
 			if( _motionIndex == 2 )
 			{
-				crown.visible = true;
+//				crown.visible = true;
 				TweenLite.to( info, 2, { alpha:1 } );
 				TweenLite.to( this, 2, { x: this.x - MotionXML.distance } );
 			}

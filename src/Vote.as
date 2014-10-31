@@ -48,6 +48,7 @@ package
 		private  var Background:Class;*/
 		
 		public static const BACKGROUND_WIDTH:Number = 1920;
+		public static const BACKGROUND_HEIGHT:Number = 1080;
 		/**_user的数据格式:
 		 * {
 		 *		icon:"http://yx.kklink.com/asimg/11945/HeaderFace/140821170046501.jpg",	
@@ -56,11 +57,13 @@ package
 		 *		userid:11945,
 		 *		vote_num:5
 		 * }
-		 */		
+		 */
+		
 		public static var USER:Vector.<Object> = new Vector.<Object>();
 		public static var NEW_USER:Array = [];
 		public static const EMPTY_ROLE:String = "empty_role";
-		private static var POLL_POST_TIME:Number = 20000;
+		public static const END_FRAME_INDEX:uint = 33;
+//		private static var POLL_POST_TIME:Number = 20000;
 		private var _mouseDir:int;
 		private var _layer:Sprite;
 		private var _loadLength:int;
@@ -97,6 +100,7 @@ package
 		private var _parameterSet:Boolean = false;
 		private var _identifier:int = 0;
 		private var _number1:Number1;
+		private var _roleIndex:int;
 		public function Vote()
 		{
 			Security.allowDomain( "*" );
@@ -134,7 +138,8 @@ package
 			_lightCircleLayer.addChild( _circle );
 			_lightCircleLayer.addChild( _light );
 			_layer.addChild( _lightCircleLayer );
-			_lightCircleLayer.y = _circle.width / 2;
+			_lightCircleLayer.y = _circle.width / 2 - 194;
+			_lightCircleLayer.scaleX = _lightCircleLayer.scaleY = 0.66;
 			
 			_backgroundLogo = new Background();
 			_layer.addChild( _backgroundLogo );
@@ -146,24 +151,28 @@ package
 			
 			onStageResize();
 			
-			_title = new Title();
+			/*_title = new Title();
 			_layer.addChild( _title );
-			_title.y = _circle.width / 2;
+			_title.y = _circle.width / 2;*/
 			
 			JSCall.addCallback( URL.ASFunc, ASFunc );
 			JSCall.CallJS( URL.JSFunc );
 //			onClosure();//测试代码
-			setTimeout( gotoCenter, 2000 );
+//			setTimeout( gotoCenter, 2000 );
+			onReady();
 		}
 		
 		private function gotoCenter():void
 		{
-			TweenLite.to( _title, 1, { alpha:0.1, scaleX:0.1, scaleY:0.1, onComplete:onReady } );
+			TweenLite.to( _title, 1, { alpha:0.1, scaleX:0.1, scaleY:0.1, y:_title.y - 100, onComplete:onReady } );
 		}
 		private function onReady():void
 		{
-			_layer.removeChild( _title );
-			_title = null;
+			if( null != _title )
+			{
+				_layer.removeChild( _title );
+				_title = null;
+			}
 			begin();
 		}
 		
@@ -177,7 +186,7 @@ package
 			_token = token;
 			if( null != obj )
 			{
-				POLL_POST_TIME = obj.game_time;
+//				POLL_POST_TIME = obj.game_time;
 			}
 			
 			/*_barid = 1;
@@ -205,7 +214,8 @@ package
 			if( ++_step == 3 )
 			{
 				addRoles();
-				_identifier = setInterval( pollPost, POLL_POST_TIME );
+//				_identifier = setInterval( pollPost, POLL_POST_TIME );
+				pollPost();
 			}
 		}
 		
@@ -229,10 +239,8 @@ package
 			}
 			_time = ret.data.time;
 			_status = ret.data.status;
-			if( 0 == _status && -1 != _identifier )
+			if( 0 == _status  )
 			{
-				clearInterval( _identifier );
-				_identifier = -1;
 				getResult();
 				return;
 			}
@@ -250,6 +258,7 @@ package
 				}
 			}
 			loadRoleImage();
+			pollPost();
 		}
 		private function onBasicInfo( ret:Object ):void
 		{
@@ -278,18 +287,22 @@ package
 		
 		private function onStageResize( e:Event = null ):void
 		{
-			var newScale:Number = stage.stageWidth / BACKGROUND_WIDTH;
+			var newScaleX:Number = stage.stageWidth / BACKGROUND_WIDTH;
+			var newScaleY:Number = stage.stageHeight/ BACKGROUND_HEIGHT;
 			_layer.x = stage.stageWidth / 2;
 			_backgroundImage.x = stage.stageWidth / 2;
-			_layer.scaleX = _layer.scaleY = newScale;
-			if( stage.stageHeight < _lightCircleLayer.height )
+			_layer.scaleX = _layer.scaleY = newScaleX < newScaleY ? newScaleX : newScaleY;
+			
+			
+			
+			/*if( stage.stageHeight < _lightCircleLayer.height )
 			{
 				_lightCircleLayer.scaleX = _lightCircleLayer.scaleY = stage.stageHeight / _lightCircleLayer.height;
 			}
 			else
 			{
 				_lightCircleLayer.scaleX = _lightCircleLayer.scaleY = 1;
-			}
+			}*/
 		}
 		private function loadRoleImage():void
 		{
@@ -343,30 +356,34 @@ package
 		{
 			checkUserData();
 			_length = USER.length;
-			addRole( 0 );
-			for( var i:int = 1; i < _length; i++ )
-			{
-				var duration:Number = VoteRole.DURATION * 1000 * i - 200;
-				setTimeout( addRole, duration, i );
-			}
+			_roleIndex =  0;
+			addRole();
 		}
-		private function addRole( roleIndex:int ):void
+		private function addRole():void
 		{
-			var role:VoteRole = new VoteRole( roleIndex, onStop );
+			var role:VoteRole = new VoteRole( _roleIndex, onStop );
 			_roleLayer.addChild( role );
-			role.y = VoteRole.ROLE_HEIGHT * 0.8;
+			role.y = VoteRole.ROLE_HEIGHT * 0.3 + 20;
 			
-			if( roleIndex == USER.length - 1 )
+			var duration:Number = VoteRole.DURATION * 1000 - 200;
+			if( _roleIndex < USER.length - 1 )
 			{
-				setTimeout( addRoles, VoteRole.DURATION * 1000 - 200 );
+				_roleIndex++;
 			}
+			else
+			{
+				_roleIndex = 0;
+			}
+			setTimeout( addRole, duration );
 		}
 		private function getResult():void
 		{
 			_loadLength = 0;
 			var param:Object = { barid:_barid, token:_token, eventid:_eventid, time:_time };
 			HttpMgr.get().post( URL.result, param, onResult );
-			TweenLite.to( _roleLayer, 1, { alpha:0.1, y:_roleLayer.y + VoteRole.ROLE_HEIGHT, scaleX:0.1, scaleY:0.1, onComplete:onReomveRoles } );
+			TweenLite.to( _roleLayer, 1, { alpha:0, y:_roleLayer.y + VoteRole.ROLE_HEIGHT - 100, scaleX:0.1, scaleY:0.1, onComplete:onReomveRoles } );
+		
+			TweenLite.to( _lightCircleLayer, 1, { y:_circle.width / 2, scaleX:1, scaleY:1 } );
 			
 			_centerShine = new CenterShine();
 			_centerShine.stop();
@@ -381,7 +398,9 @@ package
 		
 		private function onCenterShineEnterFrame( e:Event ):void
 		{
-			if( _centerShine.currentFrame >= 45 )
+			trace("onCenterShineEnterFrame currentFrame:" + _centerShine.currentFrame );
+			
+			if( _centerShine.currentFrame >= END_FRAME_INDEX )
 			{
 				_centerShine.removeEventListener( Event.ENTER_FRAME, onCenterShineEnterFrame );
 				checkRankIconLoaded();
@@ -398,7 +417,7 @@ package
 				return;
 			}
 			RANK_LIST.push.apply( null, ret.data );
-			RANK_LIST.sort( function( ui1:Object, ui2:Object ):Number
+			/*RANK_LIST.sort( function( ui1:Object, ui2:Object ):Number
 			{
 				if( ui1.ranking > ui2.ranking )
 				{
@@ -410,15 +429,18 @@ package
 					return -1;
 				}
 				return 0;
-			} );
-			for( var i:int = 0; i < RANK_LIST.length; i++ )
+			} );*/
+			var rankLength:int = RANK_LIST.length > 3 ? 3 :RANK_LIST.length;
+			for( var i:int = 0; i < rankLength; i++ )
 			{
 				ImageLoader.get().getImageCallback( RANK_LIST[ i ].icon, checkRankIconLoaded );
 			}
 		}
 		private function checkRankIconLoaded( bitmapData:BitmapData = null ):void
 		{
-			if( ++_loadLength != RANK_LIST.length + 1 )
+			++_loadLength;
+			trace( "checkRankIconLoaded : _loadLength : " + _loadLength );
+			if( _loadLength != RANK_LIST.length + 1 )
 			{
 				return;
 			}
@@ -427,6 +449,8 @@ package
 		
 		private function showRankCuprum():void
 		{
+			trace("Vote.showRankCuprum()");
+			
 			_centerShine.stop();
 			if( null != _number3 )
 			{
@@ -453,7 +477,8 @@ package
 		}
 		private function onCenterShineEnterFrame2( e:Event ):void
 		{
-			if( _centerShine.currentFrame >= 45 )
+			trace("onCenterShineEnterFrame2: currentFrame:" + _centerShine.currentFrame );
+			if( _centerShine.currentFrame >= END_FRAME_INDEX )
 			{
 				_centerShine.stop();
 				_centerShine.removeEventListener( Event.ENTER_FRAME, onCenterShineEnterFrame2 );
@@ -472,7 +497,7 @@ package
 		}
 		private function onCenterShineEnterFrame3( e:Event ):void
 		{
-			if( _centerShine.currentFrame >= 45 )
+			if( _centerShine.currentFrame >= END_FRAME_INDEX )
 			{
 				_centerShine.stop();
 				_centerShine.removeEventListener( Event.ENTER_FRAME, onCenterShineEnterFrame3 );

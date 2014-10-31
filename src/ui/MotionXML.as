@@ -88,6 +88,7 @@ package ui
 		 */		
 		public static var xmls:Vector.<XML> = new <XML>[ xml0, xml1 ];
 		public static const distance:Number = 500;
-		public static const TREMBLE:Number = 0.1;
+		public static const TREMBLE:Number = 0.6;
+		public static const TREMBLE2:Number = 2.2;
 	}
 }
