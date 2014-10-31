@@ -29,5 +29,6 @@ package
 			{
 				removeEventListener( Event.ADDED_TO_STAGE, initUI );
 			}
+		}//
 	}
 }
