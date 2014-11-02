@@ -40,13 +40,9 @@ package
 	 * @date Oct 22, 2014   11:11:26 AM
 	 * @version 1.0
 	 */
-	[SWF( height = 880, width = 1920, frameRate = 60 )]
-//	[SWF( height = 720, width = 960 )]
+	[SWF( height = 540, width = 960, frameRate = 60 )]
 	public class Vote extends Sprite
 	{
-		/*[Embed(source = "img/01.jpg")]
-		private  var Background:Class;*/
-		
 		public static const BACKGROUND_WIDTH:Number = 1920;
 		public static const BACKGROUND_HEIGHT:Number = 1080;
 		/**_user的数据格式:
@@ -63,7 +59,6 @@ package
 		public static var NEW_USER:Array = [];
 		public static const EMPTY_ROLE:String = "empty_role";
 		public static const END_FRAME_INDEX:uint = 33;
-//		private static var POLL_POST_TIME:Number = 20000;
 		private var _mouseDir:int;
 		private var _layer:Sprite;
 		private var _loadLength:int;
@@ -184,10 +179,10 @@ package
 			_barid = barid;
 			_eventid = eventid;
 			_token = token;
-			if( null != obj )
+			/*if( null != obj )
 			{
-//				POLL_POST_TIME = obj.game_time;
-			}
+				
+			}*/
 			
 			/*_barid = 1;
 			_eventid = 109;
@@ -214,7 +209,6 @@ package
 			if( ++_step == 3 )
 			{
 				addRoles();
-//				_identifier = setInterval( pollPost, POLL_POST_TIME );
 				pollPost();
 			}
 		}
@@ -292,17 +286,6 @@ package
 			_layer.x = stage.stageWidth / 2;
 			_backgroundImage.x = stage.stageWidth / 2;
 			_layer.scaleX = _layer.scaleY = newScaleX < newScaleY ? newScaleX : newScaleY;
-			
-			
-			
-			/*if( stage.stageHeight < _lightCircleLayer.height )
-			{
-				_lightCircleLayer.scaleX = _lightCircleLayer.scaleY = stage.stageHeight / _lightCircleLayer.height;
-			}
-			else
-			{
-				_lightCircleLayer.scaleX = _lightCircleLayer.scaleY = 1;
-			}*/
 		}
 		private function loadRoleImage():void
 		{
