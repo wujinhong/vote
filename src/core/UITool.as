@@ -2,6 +2,7 @@ package core
 {
 	import flash.display.BitmapData;
 	import flash.display.DisplayObject;
+	import flash.display.DisplayObjectContainer;
 	import flash.display.MovieClip;
 	import flash.events.Event;
 	import flash.utils.Dictionary;
@@ -22,6 +23,46 @@ package core
 			var bmd:BitmapData = new BitmapData( displayObject.width, displayObject.height );
 			bmd.draw( displayObject );
 			return bmd;
+		}
+		public static function stopMovieClip( displayObject:DisplayObject ):void
+		{
+			if( null == displayObject || !( displayObject is DisplayObjectContainer ) )
+			{
+				return;
+			}
+			var container:DisplayObjectContainer = displayObject as DisplayObjectContainer;
+			var mc:MovieClip;
+			var childrenNum:uint = container.numChildren;
+			for( var i:int = 0; i < childrenNum; i++ ) 
+			{
+				var child:DisplayObject = container.getChildAt( i );
+				stopMovieClip( mc );
+				if( child is MovieClip )
+				{
+					mc = child as MovieClip;
+					mc.stop();
+				} 
+			}
+		}
+		public static function playMovieClip( displayObject:DisplayObject ):void
+		{
+			if( null == displayObject || !( displayObject is DisplayObjectContainer ) )
+			{
+				return;
+			}
+			var container:DisplayObjectContainer = displayObject as DisplayObjectContainer;
+			var mc:MovieClip;
+			var childrenNum:uint = container.numChildren;
+			for( var i:int = 0; i < childrenNum; i++ ) 
+			{
+				var child:DisplayObject = container.getChildAt( i );
+				playMovieClip( mc );
+				if( child is MovieClip )
+				{
+					mc = child as MovieClip;
+					mc.play();
+				} 
+			}
 		}
 		public static function addPlayOverHandler( mc:MovieClip, func:Function ):void
 		{

@@ -20,10 +20,10 @@ package ui
 		
 		public function onTick():void
 		{
-			this.circle0.rotation++;
-			this.circle1.rotation++;
-			this.circle2.rotation++;
-			this.circle3.rotation++;
+			this.circle0.rotation += 1.5;
+			this.circle1.rotation += 1;
+			this.circle2.rotation += 1;
+			this.circle3.rotation += 2;
 		}
 		
 		public function get priority():Number

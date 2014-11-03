@@ -34,7 +34,6 @@
   </compiler>
   <applications>
     <application path="MatchLover.as"/>
-    <application path="Vote.as"/>
   </applications>
   <modules/>
   <workers/>

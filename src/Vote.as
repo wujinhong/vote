@@ -179,15 +179,6 @@ package
 			_barid = barid;
 			_eventid = eventid;
 			_token = token;
-			/*if( null != obj )
-			{
-				
-			}*/
-			
-			/*_barid = 1;
-			_eventid = 109;
-			_token = "842682394cf9a9a0788cf86af7cf2ed9";*/
-			/*全民投票的测试数据：*/
 			if( _parameterSet )
 			{
 				return;
@@ -285,6 +276,8 @@ package
 			var newScaleY:Number = stage.stageHeight/ BACKGROUND_HEIGHT;
 			_layer.x = stage.stageWidth / 2;
 			_backgroundImage.x = stage.stageWidth / 2;
+			_backgroundImage.width = stage.stageWidth;
+			_backgroundImage.height = stage.stageHeight;
 			_layer.scaleX = _layer.scaleY = newScaleX < newScaleY ? newScaleX : newScaleY;
 		}
 		private function loadRoleImage():void
