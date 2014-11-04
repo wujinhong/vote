@@ -30,7 +30,7 @@ package
 	import ui.RoleContainer;
 	import ui.RotationCircle;
 	import ui.SmallHearts;
-	import ui.Success;
+	import ui.SuccessClip;
 	import ui.TopIcon;
 	import ui.TopLight;
 	
@@ -60,7 +60,6 @@ package
 		private var _heart:Heart;
 		private var _circle:RotationCircle;
 		private var _barid:int;
-		private var _eventid:int;
 		private var _token:String;
 		/**
 		 * 格式
@@ -89,7 +88,9 @@ package
 		private var _man1:RoleContainer;
 		private var _girlIndex:int;
 		private var _manIndex:int;
-		private var _UP_DURATION:Number = 1;
+		private var _UP_DURATION:Number = 1.6;
+		private var MIN_DURATION:Number = 0.4;
+		private var SUBTRACT:Number = 0.1;
 		private var RADIUS:Number = 572;
 		private var DIAMETER:Number = RADIUS * 2;
 		private var _topIcon:TopIcon;
@@ -97,7 +98,7 @@ package
 		private var _matchBoyInfo:Object;
 		private var _matchGirlInfo:Object;
 		private var _oneRoleStop:Boolean = false;
-		private var _success:Success;
+		private var _success:SuccessClip;
 		private var _label0:Lable;
 		private var _label1:Lable;
 		public function MatchLover()
@@ -132,10 +133,9 @@ package
 		/**
 		 *被JS调用的方法
 		 */
-		private function ASFunc( barid:int = 0, eventid:int = 0, token:String = "", obj:Object = null ):void
+		private function ASFunc( barid:int = 0, token:String = "", obj:Object = null ):void
 		{
 			_barid = barid;
-			_eventid = eventid;
 			_token = token;
 			var params:Object = { barid:_barid, token:_token };
 			HttpMgr.get().post( URL2.barList, params, onBarList );
@@ -229,12 +229,12 @@ package
 			}
 			if( 0 != ret.code )
 			{//ret.code == 0说明为返回成功
-				trace( "ret.code" + ret.code );
+				trace( "ret.code = " + ret.code );
 				return;
 			}
 //			_manData.push.apply( null, ret.data.boy );
-			_matchBoyInfo = ret.data.list.boy;
-			_matchGirlInfo = ret.data.list.girl;
+			_matchBoyInfo = ret.data.boy;
+			_matchGirlInfo = ret.data.girl;
 			_loadLength = 0;
 			ImageLoader.get().getImageCallback( _matchBoyInfo.icon, matchLoverImagesLoaded );
 			ImageLoader.get().getImageCallback( _matchGirlInfo.icon, matchLoverImagesLoaded );
@@ -266,7 +266,7 @@ package
 		}
 		private function set UP_DURATION( upDuration:Number ):void
 		{
-			if( _UP_DURATION < 0.2 )
+			if( _UP_DURATION < MIN_DURATION )
 			{
 				return;
 			}
@@ -285,8 +285,8 @@ package
 			UITool.stopMovieClip( _heartLine );
 			_heartLine.visible = false;
 			
-			_success = new Success();
-			addChild( _success );
+			_success = new SuccessClip();
+			_layer.addChild( _success );
 			_success.ui.addEventListener( Event.ENTER_FRAME, onSuccessEnterFrame );
 		}
 		private function onSuccessEnterFrame( e:Event ):void
@@ -308,13 +308,15 @@ package
 				return;
 			}
 			manIndex++;
-			UP_DURATION -= 0.04;
+			UP_DURATION -= SUBTRACT;
 			var bitmap:Bitmap = new Bitmap( ImageLoader.get().getBitmapData( _manData[ _manIndex ].icon ) );
-			_man1.container.removeChildren();
+			UITool.removeChildren( _man1.container );
 			_man1.container.addChild( bitmap );
 			setBack( _man1 );
 			setBitmapPos( bitmap );
 			
+			TweenLite.killTweensOf( _man0 );
+			TweenLite.killTweensOf( _man1 );
 			TweenLite.to( _man1, _UP_DURATION, { y:0, onComplete:onManComplete1 } );
 			_label0.show( _manData[ _manIndex ].nick, _UP_DURATION );
 			TweenLite.to( _man0, _UP_DURATION, { y:-DIAMETER } );
@@ -330,13 +332,15 @@ package
 				return;
 			}
 			manIndex++;
-			UP_DURATION -= 0.04;
+			UP_DURATION -= SUBTRACT;
 			var bitmap:Bitmap = new Bitmap( ImageLoader.get().getBitmapData( _manData[ _manIndex ].icon ) );
-			_man0.container.removeChildren();
+			UITool.removeChildren( _man0.container );
 			_man0.container.addChild( bitmap );
 			setBack( _man0 );
 			setBitmapPos( bitmap );
 			
+			TweenLite.killTweensOf( _man0 );
+			TweenLite.killTweensOf( _man1 );
 			TweenLite.to( _man0, _UP_DURATION, { y:0, onComplete:onManComplete0 } );
 			_label0.show( _manData[ _manIndex ].nick, _UP_DURATION );
 			TweenLite.to( _man1, _UP_DURATION, { y:-DIAMETER } );
@@ -350,11 +354,13 @@ package
 			}
 			girlIndex++;
 			var bitmap:Bitmap = new Bitmap( ImageLoader.get().getBitmapData( _girlData[ _girlIndex ].icon ) );
-			_girl1.container.removeChildren();
+			UITool.removeChildren( _girl1.container );
 			_girl1.container.addChild( bitmap );
 			setBack( _girl1 );
 			setBitmapPos( bitmap );
 			
+			TweenLite.killTweensOf( _girl0 );
+			TweenLite.killTweensOf( _girl1 );
 			TweenLite.to( _girl1, _UP_DURATION, { y:0, onComplete:onGirlComplete1 } );
 			_label1.show( _girlData[ _girlIndex ].nick, _UP_DURATION );
 			TweenLite.to( _girl0, _UP_DURATION, { y:-DIAMETER } );
@@ -368,11 +374,13 @@ package
 			}
 			girlIndex++;
 			var bitmap:Bitmap = new Bitmap( ImageLoader.get().getBitmapData( _girlData[ _girlIndex ].icon ) );
-			_girl0.container.removeChildren();
+			UITool.removeChildren( _girl0.container );
 			_girl0.container.addChild( bitmap );
 			setBack( _girl0 );
 			setBitmapPos( bitmap );
 			
+			TweenLite.killTweensOf( _girl0 );
+			TweenLite.killTweensOf( _girl1 );
 			TweenLite.to( _girl0, _UP_DURATION, { y:0, onComplete:onGirlComplete0 } );
 			_label1.show( _girlData[ _girlIndex ].nick, _UP_DURATION );
 			TweenLite.to( _girl1, _UP_DURATION, { y:-DIAMETER } );
@@ -456,30 +464,30 @@ package
 			
 			_manBigIcon = new Man();
 			_layer.addChild( _manBigIcon );
-			_manBigIcon.icon.container.removeChildren();
+			UITool.removeChildren( _manBigIcon.icon.container );
 			
 			_girlBigIcon = new Girl();
 			_layer.addChild( _girlBigIcon );
-			_girlBigIcon.icon.container.removeChildren();
+			UITool.removeChildren( _girlBigIcon.icon.container );
 			
 			_girl0 = new RoleContainer();
 			_girl1 = new RoleContainer();
 			_girlBigIcon.icon.container.addChild( _girl0 );
 			_girlBigIcon.icon.container.addChild( _girl1 );
-			_girl0.container.removeChildren();
-			_girl1.container.removeChildren();
+			UITool.removeChildren( _girl0.container );
+			UITool.removeChildren( _girl1.container );
 			
 			_man0 = new RoleContainer();
 			_man1 = new RoleContainer();
-			_man0.container.removeChildren();
-			_man1.container.removeChildren();
+			UITool.removeChildren( _man0.container );
+			UITool.removeChildren( _man1.container );
 			_manBigIcon.icon.container.addChild( _man0 );
 			_manBigIcon.icon.container.addChild( _man1 );
 			
-			_label0 = new Lable( "" );
-			_label1 = new Lable( "" );
-			_label0.x = -470;
-			_label1.x = 340;
+			_label0 = new Lable();
+			_label1 = new Lable();
+			_label0.x = -600;
+			_label1.x = 200;
 			
 			_layer.addChild( _label0 );
 			_layer.addChild( _label1 );

@@ -115,7 +115,8 @@ package core
 				loadTask.containers.push( container );
 				return;
 			}
-			container.removeChildren();
+//			container.removeChildren(); //player 11不支持
+			UITool.removeChildren( container );
 			container.addChild( new Bitmap( loadTask.BitmapData ) );
 		}
 		
@@ -134,7 +135,8 @@ package core
 			var containers:Array = loadTask.containers;
 			for( var i:int = 0; i < len; i++ ) 
 			{
-				containers[ i ].removeChildren();
+//				containers[ i ].removeChildren();//player 11不支持
+				UITool.removeChildren( containers[ i ] );
 				containers[ i ].addChild( new Bitmap( loadTask.BitmapData ) );
 			}
 			len = loadTask.callbacks.length;

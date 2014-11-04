@@ -24,6 +24,13 @@ package core
 			bmd.draw( displayObject );
 			return bmd;
 		}
+		public static function removeChildren( container:DisplayObjectContainer ):void
+		{
+			while( container.numChildren )
+			{
+				container.removeChildAt( 0 );
+			}
+		}
 		public static function stopMovieClip( displayObject:DisplayObject ):void
 		{
 			if( null == displayObject || !( displayObject is DisplayObjectContainer ) )
