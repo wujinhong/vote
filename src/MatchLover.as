@@ -129,11 +129,12 @@ package
 			JSCall.addCallback( URL.ASFunc, ASFunc );
 			JSCall.CallJS( URL.JSFunc );
 			initComponent();
+			ASFunc();
 		}
 		/**
 		 *被JS调用的方法
 		 */
-		private function ASFunc( barid:int = 0, token:String = "", obj:Object = null ):void
+		private function ASFunc( barid:int = 1, token:String = "842682394cf9a9a0788cf86af7cf2ed9", obj:Object = null ):void
 		{
 			_barid = barid;
 			_token = token;
