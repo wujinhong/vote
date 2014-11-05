@@ -9,6 +9,7 @@ package
 	import flash.display.StageScaleMode;
 	import flash.events.Event;
 	import flash.events.KeyboardEvent;
+	import flash.external.ExternalInterface;
 	import flash.system.Security;
 	import flash.ui.Keyboard;
 	
@@ -49,7 +50,7 @@ package
 		
 		private var _layer:Sprite;
 		/**
-		 *背景大图 
+		 *背景大图
 		 */		
 		private var _background:MatchBackground;
 		private var _topLight:TopLight;
@@ -103,9 +104,9 @@ package
 		private var _label1:Lable;
 		public function MatchLover()
 		{
+			super();
 			Security.allowDomain( "*" );
 			Security.allowInsecureDomain( "*" );
-			super();
 			if( null != stage ) 
 			{
 				initUI();
@@ -129,7 +130,11 @@ package
 			JSCall.addCallback( URL.ASFunc, ASFunc );
 			JSCall.CallJS( URL.JSFunc );
 			initComponent();
-			ASFunc();
+			if( !ExternalInterface.available )
+			{
+				ASFunc();
+			}
+			onStageResize();
 		}
 		/**
 		 *被JS调用的方法
@@ -150,6 +155,7 @@ package
 			}
 			if( 0 != ret.code )
 			{//ret.code == 0说明为返回成功
+				trace( "MatchLover.onBarList:ret.code = " + ret.code );
 				return;
 			}
 			_manData.push.apply( null, ret.data.boy );
@@ -205,8 +211,7 @@ package
 		{
 			switch( e.keyCode )
 			{
-				case Keyboard.BACKSPACE:
-				case Keyboard.CONTROL:
+				case Keyboard.SPACE:
 					stage.removeEventListener( KeyboardEvent.KEY_DOWN, roll );
 					UITool.playMovieClip( _heartLine );
 					TweenLite.to( _man0, _UP_DURATION, { y:0, onComplete:onManComplete0 } );
@@ -253,8 +258,7 @@ package
 		{
 			switch( e.keyCode )
 			{
-				case Keyboard.BACKSPACE:
-				case Keyboard.CONTROL:
+				case Keyboard.SPACE:
 					_stop = true;
 					break;
 				default:
