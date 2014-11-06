@@ -89,6 +89,7 @@ package ui
 			addChild( _bitmap );
 			cacheAsBitmap = true;
 			rotationY = ROTATION_Y;
+			TweenLite.killTweensOf( this );
 			TweenLite.to( this, DURATION, { x:STAGE_1_5_X * ROLE_WIDTH, alpha:1, onComplete:onComplete1 } );//走向位置1
 		}
 		private function setOrigin():void
@@ -101,6 +102,7 @@ package ui
 		 */
 		private function onComplete1():void
 		{
+			TweenLite.killTweensOf( this );
 			TweenLite.to( this, DURATION, { x:STAGE_2_4_X * ROLE_WIDTH, rotationY:ROTATION_Y1, onComplete:onComplete2 } );//走向位置2
 		}
 		/**
@@ -112,8 +114,10 @@ package ui
 			{
 				_roleInfo.visible = true;
 				_roleInfo.alpha = 0;
+				TweenLite.killTweensOf( _roleInfo );
 				TweenLite.to( _roleInfo, DURATION, { alpha:1 } );
 			}
+			TweenLite.killTweensOf( this );
 			TweenLite.to( this, DURATION, { rotationY:0, x:0, onComplete:onComplete3 } );//走向位置3(即中间)
 		}
 		/**
@@ -122,11 +126,14 @@ package ui
 		private function onComplete3():void
 		{
 			setOrigin();
+			
+			TweenLite.killTweensOf( this );
 			TweenLite.to( this, DURATION, { rotationY:ROTATION_Y2, x:-STAGE_2_4_X * ROLE_WIDTH, onComplete:onComplete4 } );//走向位置4
 			
 			if( null != _roleInfo )
 			{
 				_roleInfo.alpha = 1;
+				TweenLite.killTweensOf( _roleInfo );
 				TweenLite.to( _roleInfo, DURATION, { alpha:0 } );
 				
 				addChild( _shine );
@@ -154,6 +161,7 @@ package ui
 		{
 			setOrigin();
 			rotationY = ROTATION_Y2;
+			TweenLite.killTweensOf( this );
 			TweenLite.to( this, DURATION, { rotationY:ROTATION_Y3, x:-STAGE_1_5_X * ROLE_WIDTH, onComplete:onComplete5 } );//走向位置5
 			if( null != _roleInfo )
 			{
@@ -167,6 +175,7 @@ package ui
 		{
 			setOrigin();
 			rotationY = ROTATION_Y3;
+			TweenLite.killTweensOf( this );
 			TweenLite.to( this, DURATION, { x:-( STAGE_1_5_X + 1 ) * ROLE_WIDTH, alpha:0, onComplete:onFinalComplete } );
 		}
 		private function onFinalComplete():void

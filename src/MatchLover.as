@@ -89,8 +89,8 @@ package
 		private var _man1:RoleContainer;
 		private var _girlIndex:int;
 		private var _manIndex:int;
-		private var _UP_DURATION:Number = 1.6;
-		private var MIN_DURATION:Number = 0.4;
+		private var _UP_DURATION:Number = 0.3;
+		private var MIN_DURATION:Number = 0.3;
 		private var SUBTRACT:Number = 0.1;
 		private var RADIUS:Number = 572;
 		private var DIAMETER:Number = RADIUS * 2;
@@ -197,7 +197,7 @@ package
 			
 			var bitmap:Bitmap = new Bitmap( ImageLoader.get().getBitmapData( _girlData[ _girlIndex ].icon ) );
 			_girl0.container.addChild( bitmap );
-			setBack( _girl0 );
+			setGirlBack( _girl0 );
 			setBitmapPos( bitmap );
 			
 			bitmap = new Bitmap( ImageLoader.get().getBitmapData( _manData[ _manIndex ].icon ) );
@@ -313,7 +313,7 @@ package
 				return;
 			}
 			manIndex++;
-			UP_DURATION -= SUBTRACT;
+//			UP_DURATION -= SUBTRACT;
 			var bitmap:Bitmap = new Bitmap( ImageLoader.get().getBitmapData( _manData[ _manIndex ].icon ) );
 			UITool.removeChildren( _man1.container );
 			_man1.container.addChild( bitmap );
@@ -328,7 +328,7 @@ package
 		}
 		/**
 		 *第二个到达中心
-		 */		
+		 */
 		private function onManComplete1():void
 		{
 			if( _stop && _matchBoyInfo.userid == _manData[ _manIndex ].userid )
@@ -337,7 +337,7 @@ package
 				return;
 			}
 			manIndex++;
-			UP_DURATION -= SUBTRACT;
+//			UP_DURATION -= SUBTRACT;
 			var bitmap:Bitmap = new Bitmap( ImageLoader.get().getBitmapData( _manData[ _manIndex ].icon ) );
 			UITool.removeChildren( _man0.container );
 			_man0.container.addChild( bitmap );
@@ -361,14 +361,14 @@ package
 			var bitmap:Bitmap = new Bitmap( ImageLoader.get().getBitmapData( _girlData[ _girlIndex ].icon ) );
 			UITool.removeChildren( _girl1.container );
 			_girl1.container.addChild( bitmap );
-			setBack( _girl1 );
+			setGirlBack( _girl1 );
 			setBitmapPos( bitmap );
 			
 			TweenLite.killTweensOf( _girl0 );
 			TweenLite.killTweensOf( _girl1 );
 			TweenLite.to( _girl1, _UP_DURATION, { y:0, onComplete:onGirlComplete1 } );
 			_label1.show( _girlData[ _girlIndex ].nick, _UP_DURATION );
-			TweenLite.to( _girl0, _UP_DURATION, { y:-DIAMETER } );
+			TweenLite.to( _girl0, _UP_DURATION, { y:DIAMETER } );
 		}
 		private function onGirlComplete1():void
 		{
@@ -381,14 +381,14 @@ package
 			var bitmap:Bitmap = new Bitmap( ImageLoader.get().getBitmapData( _girlData[ _girlIndex ].icon ) );
 			UITool.removeChildren( _girl0.container );
 			_girl0.container.addChild( bitmap );
-			setBack( _girl0 );
+			setGirlBack( _girl0 );
 			setBitmapPos( bitmap );
 			
 			TweenLite.killTweensOf( _girl0 );
 			TweenLite.killTweensOf( _girl1 );
 			TweenLite.to( _girl0, _UP_DURATION, { y:0, onComplete:onGirlComplete0 } );
 			_label1.show( _girlData[ _girlIndex ].nick, _UP_DURATION );
-			TweenLite.to( _girl1, _UP_DURATION, { y:-DIAMETER } );
+			TweenLite.to( _girl1, _UP_DURATION, { y:DIAMETER } );
 		}
 		private function get girlIndex():int
 		{
@@ -419,6 +419,10 @@ package
 			{
 				_manIndex = 0;
 			}
+		}
+		private function setGirlBack( container:Sprite ):void
+		{
+			container.y = -DIAMETER;
 		}
 		private function setBack( container:Sprite ):void
 		{
