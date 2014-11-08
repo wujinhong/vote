@@ -1,6 +1,4 @@
 package {
-	import com.greensock.TweenLite;
-	
 	import flash.display.BitmapData;
 	import flash.display.Sprite;
 	import flash.display.StageAlign;
@@ -10,27 +8,47 @@ package {
 	import flash.external.ExternalInterface;
 	import flash.system.Security;
 	import flash.ui.Keyboard;
-	import flash.utils.setInterval;
-	import flash.utils.setTimeout;
 	
 	import core.ImageLoader;
-	import core.UITool;
 	
 	import net.HttpMgr;
 	import net.JSCall;
 	import net.URL;
-	import net.URL2;
 	import net.URL3;
 	
+	import tg888.MainWall;
+	
 	import ui.LotteryBackground;
-	import ui.LotteryLight;
-	import ui.LotteryRole;
+	import ui.LotteryFail;
 	import ui.Winer;
 	
-	
-	[SWF( height = 540, width = 960, frameRate = 60 )]
+	[SWF( height = 1080, width = 1920, frameRate = 60 )]
 	public class Lottery extends Sprite
 	{
+		/**
+		 *伪数据 
+		 */		
+		private var pseudoLotteryData:Array = 
+			[
+				{
+					icon:"http://yx.kklink.com/asimg/10014/HeaderFace/140822134438781.jpg",
+					nick:"Jack",
+					sex:"M",
+					userid:10014
+				},
+				{
+					icon:"http://yx.kklink.com/asimg/10014/HeaderFace/140822134438781.jpg",
+					nick:"Jack",
+					sex:"M",
+					userid:10014
+				},
+				{
+					icon:"http://yx.kklink.com/asimg/10014/HeaderFace/140822134438781.jpg",
+					nick:"Jack",
+					sex:"M",
+					userid:10014
+				}
+			];
 		public static const BACKGROUND_WIDTH:Number = 1920;
 		public static const BACKGROUND_HEIGHT:Number = 1080;
 		/**
@@ -39,23 +57,26 @@ package {
 		 *	icon:"http://yx.kklink.com/asimg/10014/HeaderFace/140822134438781.jpg",
 		 *	nick:"Jack",
 		 *	sex:"M",
-		 *	userid:10014 [0x271e]
+		 *	userid:10014
 		 * }
 		 */		
 		public static var lotteryData:Vector.<Object> = new Vector.<Object>();
+		public static var currentIndex:int = 0;
 		private var _background:LotteryBackground;
 		private var _layer:Sprite;
 		private var _barid:int;
 		private var _token:String;
 		private var _loadLength:uint;
-		private var _currentIndex:int = 0;
 		private var intervalID:uint;
 		public static var winUser:Object;
 		private var _winer:Winer;
 		private var _roleLayer:Sprite;
+		private var mainWall:MainWall;
+		private var _lotteryFail:LotteryFail;
+		private var _fail:Boolean = false;
 		
 		public function Lottery()
-		{			
+		{
 			super();
 			Security.allowDomain( "*" );
 			Security.allowInsecureDomain( "*" );
@@ -118,55 +139,28 @@ package {
 		private function checkAllLoaded( bitmapData:BitmapData ):void
 		{
 			_loadLength--;
+			trace( "Lottery.checkAllLoaded( bitmapData ): _loadLength" + _loadLength );
+			
 			if( 0 != _loadLength )
 			{
 				return;
 			}
-			begin()
-		}
-		private function getLotteryRoleIndex():uint
-		{
-			_currentIndex++;
-			if( _currentIndex < lotteryData.length )
-			{
-				return _currentIndex;
-			}
-			else
-			{
-				_currentIndex = 0;
-				return _currentIndex;
-			}
-		}
-		
-		private function begin():void
-		{
 			if( 0 == lotteryData.length )
 			{
 				trace("Lottery.begin(): no data");
 				return;
 			}
-//			intervalID = setInterval( oneLotteryRole, LotteryRole.DURATION * 2 + 0.1 );
-			intervalID = setTimeout( oneLotteryRole, LotteryRole.DURATION * 2 + 0.1 );
-//			_layer.visible = false;
-//			setTimeout( showLayer, 2000 );
-			stage.addEventListener( KeyboardEvent.KEY_DOWN, roll );
+			
+			mainWall.start();
+			
+			var params:Object = { barid:_barid, token:_token };
+			HttpMgr.get().post( URL3.winer, params, onResult );
 		}
-		private function roll( e:KeyboardEvent ):void
+		public static function getLotteryRoleIndex():uint
 		{
-			switch( e.keyCode )
-			{
-				case Keyboard.SPACE:
-					_winer.stopLight();
-					_winer.visible = false;
-					stage.removeEventListener( KeyboardEvent.KEY_DOWN, roll );
-					var params:Object = { barid:_barid, token:_token };
-					HttpMgr.get().post( URL3.winer, params, onResult );
-					break;
-				default:
-					break;
-			}
+			currentIndex = currentIndex < lotteryData.length ? currentIndex + 1 : 0;
+			return currentIndex;
 		}
-		
 		private function onResult( ret:Object ):void
 		{
 			if( null == ret.data )
@@ -176,26 +170,59 @@ package {
 			if( 0 != ret.code )
 			{//ret.code == 0说明为返回成功
 				trace( "Lottery.onResult:ret.code = " + ret.code );
+				_fail = true;
 				return;
 			}
+			_fail = false;
 			winUser = ret.data.user;
 			ImageLoader.get().getImageCallback( winUser.icon, winUserLoaded );
 		}
-		
 		private function winUserLoaded( bitmapData:BitmapData ):void
 		{
-			stage.addEventListener( KeyboardEvent.KEY_DOWN, roll );
-			_winer.addBitmap();
-			_winer.visible = true;
+			trace( "Lottery.winUserLoaded( bitmapData ); 赢家图片加载成功。" );
+			
+			stage.addEventListener( KeyboardEvent.KEY_DOWN, showResult );
 		}
-		private function showLayer():void
+		private function showResult( e:KeyboardEvent ):void
 		{
-			_layer.visible = true;
+			switch( e.keyCode )
+			{
+				case Keyboard.SPACE:
+					stage.removeEventListener( KeyboardEvent.KEY_DOWN, showResult );
+					if( _fail )
+					{
+						_lotteryFail.visible = true;
+						_winer.visible = false;
+						_winer.stopLight();
+					}
+					else
+					{
+						_winer.addBitmap();
+						_winer.visible = true;
+					}
+					mainWall.stopRenderView();
+					stage.addEventListener( KeyboardEvent.KEY_DOWN, roll );
+					break;
+				default:
+					break;
+			}
 		}
-		private function oneLotteryRole():void
+		private function roll( e:KeyboardEvent ):void
 		{
-			var lotterRole:LotteryRole = LotteryRole.getLotteryRole( _currentIndex );
-			_roleLayer.addChild( lotterRole );
+			switch( e.keyCode )
+			{
+				case Keyboard.SPACE:
+					_lotteryFail.visible = false;
+					_winer.visible = false;
+					_winer.stopLight();
+					mainWall.renderView();
+					stage.removeEventListener( KeyboardEvent.KEY_DOWN, roll );
+					var params:Object = { barid:_barid, token:_token };
+					HttpMgr.get().post( URL3.winer, params, onResult );
+					break;
+				default:
+					break;
+			}
 		}
 		private function onStageResize( e:Event = null ):void
 		{
@@ -205,7 +232,6 @@ package {
 			_background.x = stage.stageWidth / 2;
 			_background.width = stage.stageWidth;
 			_background.height = stage.stageHeight;
-//			_layer.scaleX = _layer.scaleY = newScaleX < newScaleY ? newScaleX : newScaleY;
 		}
 		private function initComponent():void
 		{
@@ -223,9 +249,17 @@ package {
 			_roleLayer = new Sprite();
 			_layer.addChild( _roleLayer );
 			
+			mainWall = new MainWall();
+			_roleLayer.addChild( mainWall );
+			mainWall.x = -MainWall.VIEW_WIDTH / 2;
+//			mainWall.width = mainWall.width / 2;
 			_winer = new Winer();
 			_layer.addChild( _winer );
 			_winer.visible = false;
+			
+			_lotteryFail = new LotteryFail();
+			_layer.addChild( _lotteryFail );
+			_lotteryFail.visible = false;
 		}
 	}
 }

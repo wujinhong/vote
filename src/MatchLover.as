@@ -22,6 +22,7 @@ package
 	import net.URL;
 	import net.URL2;
 	
+	import ui.Fail;
 	import ui.Girl;
 	import ui.Heart;
 	import ui.HeartLine;
@@ -78,7 +79,7 @@ package
 		 *	icon:"http://yx.kklink.com/asimg/10014/HeaderFace/140822134438781.jpg",
 		 *	nick:"何桂明",
 		 *	sex:"F",
-		 *	userid:10014 [0x271e]
+		 *	userid:10014
 		 * }
 		 */	
 		private var _girlData:Vector.<Object> = new Vector.<Object>();
@@ -90,18 +91,35 @@ package
 		private var _girlIndex:int;
 		private var _manIndex:int;
 		private var _UP_DURATION:Number = 0.3;
-		private var MIN_DURATION:Number = 0.3;
 		private var SUBTRACT:Number = 0.1;
-		private var RADIUS:Number = 572;
-		private var DIAMETER:Number = RADIUS * 2;
+		private var DIAMETER:Number = 572;
 		private var _topIcon:TopIcon;
-		private var _stop:Boolean = false;
+		/**
+		 * {
+		 * icon:"http://yx.kklink.com/asimg/male/141102404606283.jpg",
+		 * nick:"两口遇三金",
+		 * sex:"M",
+		 * userid:233774
+		 * }
+		 */		
 		private var _matchBoyInfo:Object;
+		/**
+		 * {
+		 * icon:"http://yx.kklink.com/asimg/male/141102404606283.jpg",
+		 * nick:"两口遇三金",
+		 * sex:"M",
+		 * userid:233774
+		 * }
+		 */
 		private var _matchGirlInfo:Object;
-		private var _oneRoleStop:Boolean = false;
 		private var _success:SuccessClip;
 		private var _label0:Lable;
 		private var _label1:Lable;
+		private var _fail:Boolean = false;
+		private var failPanel:Fail;
+		private var _newBoy:Array;
+		private var _newGirl:Array;
+		private var _newLoadLength:uint;
 		public function MatchLover()
 		{
 			super();
@@ -139,7 +157,7 @@ package
 		/**
 		 *被JS调用的方法
 		 */
-		private function ASFunc( barid:int = 1, token:String = "842682394cf9a9a0788cf86af7cf2ed9", obj:Object = null ):void
+		private function ASFunc( barid:int = 43, token:String = "842682394cf9a9a0788cf86af7cf2ed9", obj:Object = null ):void
 		{
 			_barid = barid;
 			_token = token;
@@ -187,7 +205,7 @@ package
 			{
 				return;
 			}
-			begin()
+			begin();
 		}
 		
 		private function begin():void
@@ -202,8 +220,11 @@ package
 			
 			bitmap = new Bitmap( ImageLoader.get().getBitmapData( _manData[ _manIndex ].icon ) );
 			_man0.container.addChild( bitmap );
-			setBack( _man0 );
 			setBitmapPos( bitmap );
+			_man0.y = DIAMETER;
+			
+			var params:Object = { barid:_barid, token:_token };
+			HttpMgr.get().post( URL2.pair, params, onPair );
 			
 			stage.addEventListener( KeyboardEvent.KEY_DOWN, roll );
 		}
@@ -214,36 +235,60 @@ package
 				case Keyboard.SPACE:
 					stage.removeEventListener( KeyboardEvent.KEY_DOWN, roll );
 					UITool.playMovieClip( _heartLine );
+					
+					_smallHearts.visible = false;
+					_topLight.visible = false;
+					_success.visible = false;
+					UITool.stopMovieClip( _smallHearts );
+					UITool.stopMovieClip( _topLight );
+					UITool.playMovieClip( _heartLine );
+					_heartLine.visible = true;
+					
+					TweenLite.killTweensOf( _man0 );
+					TweenLite.killTweensOf( _girl0 );
 					TweenLite.to( _man0, _UP_DURATION, { y:0, onComplete:onManComplete0 } );
 					_label0.show( _manData[ _manIndex ].nick, _UP_DURATION );
+					
 					TweenLite.to( _girl0, _UP_DURATION, { y:0, onComplete:onGirlComplete0 } );
 					_label1.show( _girlData[ _girlIndex ].nick, _UP_DURATION );
-					
-					var params:Object = { barid:_barid, token:_token };
-					HttpMgr.get().post( URL2.pair, params, onPair );
 					break;
 				default:
 					break;
 			}
 		}
 		
-		private function onPair( ret:Object ):void
+		private function loadNewImage():void
 		{
-			if( null == ret.data )
+			_newLoadLength = _newBoy.length;
+			var i:int;
+			for( i = 0; i < _newLoadLength; i++ )
+			{
+				ImageLoader.get().getImageCallback( _newBoy[ i ].icon, checkNewAllLoaded );
+			}
+			_newLoadLength = _newGirl.length;
+			for( i = 0; i < _newLoadLength; i++ )
+			{
+				ImageLoader.get().getImageCallback( _newGirl[ i ].icon, checkNewAllLoaded );
+			}
+			_newLoadLength = _newBoy.length + _newGirl.length;
+		}
+		private function checkNewAllLoaded( bmd:BitmapData ):void
+		{
+			_newLoadLength--;
+			if( 0 != _newLoadLength )
 			{
 				return;
 			}
-			if( 0 != ret.code )
-			{//ret.code == 0说明为返回成功
-				trace( "ret.code = " + ret.code );
-				return;
+			if( _newBoy.length > 0 )
+			{
+				_manData.push.apply( null, _newBoy );
+				_newBoy = [];
 			}
-//			_manData.push.apply( null, ret.data.boy );
-			_matchBoyInfo = ret.data.boy;
-			_matchGirlInfo = ret.data.girl;
-			_loadLength = 0;
-			ImageLoader.get().getImageCallback( _matchBoyInfo.icon, matchLoverImagesLoaded );
-			ImageLoader.get().getImageCallback( _matchGirlInfo.icon, matchLoverImagesLoaded );
+			if( _newGirl.length > 0 )
+			{
+				_girlData.push.apply( null, _newGirl );
+				_newGirl = [];
+			}
 		}
 		private function matchLoverImagesLoaded( bitmapData:BitmapData):void
 		{
@@ -251,6 +296,7 @@ package
 			if( _loadLength == 2 )
 			{
 				stage.addEventListener( KeyboardEvent.KEY_DOWN, showResult );
+				trace( "MatchLover.matchLoverImagesLoaded( bitmapData );配对男女图片加载成功！" );
 			}
 		}
 		
@@ -259,69 +305,130 @@ package
 			switch( e.keyCode )
 			{
 				case Keyboard.SPACE:
-					_stop = true;
+					trace( "MatchLover.showResult( e ):显示结果" );
+					stage.removeEventListener( KeyboardEvent.KEY_DOWN, showResult );
+					if( _fail )
+					{
+						if( null == failPanel )
+						{
+							failPanel = new Fail();
+						}
+						_layer.addChild( failPanel );
+						stage.addEventListener( KeyboardEvent.KEY_DOWN, roll );
+					}
+					else
+					{
+						showSeccess();
+					}
+					var params:Object = { barid:_barid, token:_token };
+					HttpMgr.get().post( URL2.pair, params, onPair );
 					break;
 				default:
 					break;
 			}
 		}
-		private function get UP_DURATION():Number
+		private function onPair( ret:Object ):void
 		{
-			return _UP_DURATION;
-		}
-		private function set UP_DURATION( upDuration:Number ):void
-		{
-			if( _UP_DURATION < MIN_DURATION )
+			if( null == ret.data )
 			{
 				return;
 			}
-			_UP_DURATION = upDuration;
-		}
-		
-		private function stopOnResult():void
-		{
-			if( !_oneRoleStop )
-			{
-				_oneRoleStop = true;
+			//			ret.code = 0;
+			if( 0 != ret.code )
+			{//ret.code == 0说明为返回成功
+				trace( "onPair:ret.code = " + ret.code );
+				_fail = true;
 				return;
 			}
+			_fail = false;
+			_matchBoyInfo = ret.data.boy;
+			_matchGirlInfo = ret.data.girl;
+			
+			//			_matchBoyInfo = _manData[ _manIndex ];
+			//			_matchGirlInfo = _girlData[ _girlIndex ];
+			
+			_loadLength = 0;
+			ImageLoader.get().getImageCallback( _matchBoyInfo.icon, matchLoverImagesLoaded );
+			ImageLoader.get().getImageCallback( _matchGirlInfo.icon, matchLoverImagesLoaded );
+			_newBoy = ret.data.list.boy as Array;
+			_newGirl= ret.data.list.girl as Array;
+			loadNewImage();
+		}
+		private function showSeccess():void
+		{
+			TweenLite.killTweensOf( _man0 );
+			TweenLite.killTweensOf( _man1 );
+			
+			TweenLite.killTweensOf( _girl0 );
+			TweenLite.killTweensOf( _girl1 );
+			
+			var bmd:BitmapData = ImageLoader.get().getBitmapData( _matchBoyInfo.icon );
+			var bitmap:Bitmap = new Bitmap( bmd );
+			UITool.removeChildren( _man1.container );
+			_man1.container.addChild( bitmap );
+			_man1.y = 0;
+			setBitmapPos( bitmap );
+			
+			bmd = ImageLoader.get().getBitmapData( _matchGirlInfo.icon );
+			bitmap = new Bitmap( bmd );
+			UITool.removeChildren( _girl1.container );
+			_girl1.container.addChild( bitmap );
+			_girl1.y = 0;
+			setBitmapPos( bitmap );
+			
+			_smallHearts.visible = true;
+			
 			UITool.playMovieClip( _smallHearts );
-			UITool.playMovieClip( _topLight );
 			UITool.stopMovieClip( _heartLine );
 			_heartLine.visible = false;
 			
-			_success = new SuccessClip();
-			_layer.addChild( _success );
-			_success.ui.addEventListener( Event.ENTER_FRAME, onSuccessEnterFrame );
+			_topLight.visible = true;
+			_topLight.mc.gotoAndPlay( 1 );
+			_topLight.mc.addEventListener( Event.ENTER_FRAME, onEnterFrame );
+			
+			_success.visible = true;
+			_success.ui.gotoAndPlay( 1 );
+			_success.ui.addEventListener( Event.ENTER_FRAME, onEnterFrame );
 		}
-		private function onSuccessEnterFrame( e:Event ):void
+		private function onEnterFrame( e:Event ):void
 		{
-			if( _success.ui.currentLabel >= "stop" )
+			trace( "_success.ui.currentFrame = " + _success.ui.currentFrame + "; _topLight.mc.currentFrame = " + _topLight.mc.currentFrame );
+			if( _success.ui.currentFrame >= 10 || _success.ui.currentLabel == "stop" )
 			{
+				_success.ui.removeEventListener( Event.ENTER_FRAME, onEnterFrame );
+				_success.ui.stop();
 				UITool.stopMovieClip( _success );
-				_success.ui.removeEventListener( Event.ENTER_FRAME, onSuccessEnterFrame );
 			}
+			if( _topLight.mc.currentFrame >= 10 || _topLight.mc.currentLabel == "stop" )
+			{
+				_topLight.mc.removeEventListener( Event.ENTER_FRAME, onEnterFrame );
+				_topLight.mc.stop();
+				UITool.stopMovieClip( _topLight );
+			}
+			if( ( _success.ui.currentFrame >= 10 || _success.ui.currentLabel == "stop" ) && 
+				( _topLight.mc.currentFrame >= 10 || _topLight.mc.currentLabel == "stop" ) )
+			{
+				stage.addEventListener( KeyboardEvent.KEY_DOWN, roll );
+			}
+		}
+		private function setMan( man:RoleContainer ):void
+		{
+			manIndex++;
+			var bmd:BitmapData = ImageLoader.get().getBitmapData( _manData[ _manIndex ].icon );
+			var bitmap:Bitmap = new Bitmap( bmd );
+			UITool.removeChildren( man.container );
+			man.container.addChild( bitmap );
+			man.y = DIAMETER;
+			setBitmapPos( bitmap );
 		}
 		/**
 		 *第一个到达中心
 		 */		
 		private function onManComplete0():void
 		{
-			if( _stop && _matchBoyInfo.userid == _manData[ _manIndex ].userid )
-			{
-				stopOnResult();
-				return;
-			}
-			manIndex++;
-//			UP_DURATION -= SUBTRACT;
-			var bitmap:Bitmap = new Bitmap( ImageLoader.get().getBitmapData( _manData[ _manIndex ].icon ) );
-			UITool.removeChildren( _man1.container );
-			_man1.container.addChild( bitmap );
-			setBack( _man1 );
-			setBitmapPos( bitmap );
-			
 			TweenLite.killTweensOf( _man0 );
 			TweenLite.killTweensOf( _man1 );
+			setMan( _man1 );
 			TweenLite.to( _man1, _UP_DURATION, { y:0, onComplete:onManComplete1 } );
 			_label0.show( _manData[ _manIndex ].nick, _UP_DURATION );
 			TweenLite.to( _man0, _UP_DURATION, { y:-DIAMETER } );
@@ -331,64 +438,41 @@ package
 		 */
 		private function onManComplete1():void
 		{
-			if( _stop && _matchBoyInfo.userid == _manData[ _manIndex ].userid )
-			{
-				stopOnResult();
-				return;
-			}
-			manIndex++;
-//			UP_DURATION -= SUBTRACT;
-			var bitmap:Bitmap = new Bitmap( ImageLoader.get().getBitmapData( _manData[ _manIndex ].icon ) );
-			UITool.removeChildren( _man0.container );
-			_man0.container.addChild( bitmap );
-			setBack( _man0 );
-			setBitmapPos( bitmap );
-			
 			TweenLite.killTweensOf( _man0 );
 			TweenLite.killTweensOf( _man1 );
+			setMan( _man0 );
+			
 			TweenLite.to( _man0, _UP_DURATION, { y:0, onComplete:onManComplete0 } );
 			_label0.show( _manData[ _manIndex ].nick, _UP_DURATION );
 			TweenLite.to( _man1, _UP_DURATION, { y:-DIAMETER } );
 		}
 		private function onGirlComplete0():void
 		{
-			if( _stop && _matchGirlInfo.userid == _girlData[ girlIndex ].userid )
-			{
-				stopOnResult();
-				return;
-			}
-			girlIndex++;
-			var bitmap:Bitmap = new Bitmap( ImageLoader.get().getBitmapData( _girlData[ _girlIndex ].icon ) );
-			UITool.removeChildren( _girl1.container );
-			_girl1.container.addChild( bitmap );
-			setGirlBack( _girl1 );
-			setBitmapPos( bitmap );
-			
 			TweenLite.killTweensOf( _girl0 );
 			TweenLite.killTweensOf( _girl1 );
+			setGirl( _girl1 );
+			
 			TweenLite.to( _girl1, _UP_DURATION, { y:0, onComplete:onGirlComplete1 } );
 			_label1.show( _girlData[ _girlIndex ].nick, _UP_DURATION );
 			TweenLite.to( _girl0, _UP_DURATION, { y:DIAMETER } );
 		}
 		private function onGirlComplete1():void
 		{
-			if( _stop && _matchGirlInfo.userid == _girlData[ girlIndex ].userid )
-			{
-				stopOnResult();
-				return;
-			}
-			girlIndex++;
-			var bitmap:Bitmap = new Bitmap( ImageLoader.get().getBitmapData( _girlData[ _girlIndex ].icon ) );
-			UITool.removeChildren( _girl0.container );
-			_girl0.container.addChild( bitmap );
-			setGirlBack( _girl0 );
-			setBitmapPos( bitmap );
-			
 			TweenLite.killTweensOf( _girl0 );
 			TweenLite.killTweensOf( _girl1 );
+			setGirl( _girl0 );
 			TweenLite.to( _girl0, _UP_DURATION, { y:0, onComplete:onGirlComplete0 } );
 			_label1.show( _girlData[ _girlIndex ].nick, _UP_DURATION );
 			TweenLite.to( _girl1, _UP_DURATION, { y:DIAMETER } );
+		}
+		private function setGirl( girl:RoleContainer ):void
+		{
+			girlIndex++;
+			var bitmap:Bitmap = new Bitmap( ImageLoader.get().getBitmapData( _girlData[ _girlIndex ].icon ) );
+			UITool.removeChildren( girl.container );
+			girl.container.addChild( bitmap );
+			setGirlBack( girl );
+			setBitmapPos( bitmap );
 		}
 		private function get girlIndex():int
 		{
@@ -424,16 +508,12 @@ package
 		{
 			container.y = -DIAMETER;
 		}
-		private function setBack( container:Sprite ):void
-		{
-			container.y = DIAMETER;
-		}
 		private function setBitmapPos( bitmap:Bitmap ):void
 		{
-			bitmap.height = RADIUS;
-			bitmap.width = RADIUS;
-			bitmap.x = -RADIUS / 2;
-			bitmap.y = -RADIUS / 2;
+			bitmap.height = DIAMETER;
+			bitmap.width = DIAMETER;
+			bitmap.x = -DIAMETER / 2;
+			bitmap.y = -DIAMETER / 2;
 		}
 		private function initComponent():void
 		{
@@ -500,6 +580,10 @@ package
 			
 			_layer.addChild( _label0 );
 			_layer.addChild( _label1 );
+			
+			_success = new SuccessClip();
+			_layer.addChild( _success );
+			_success.visible = false;
 		}
 		private function onStageResize( e:Event = null ):void
 		{

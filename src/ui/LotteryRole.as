@@ -1,7 +1,5 @@
 package ui
 {
-	import com.greensock.TweenLite;
-	
 	import flash.display.Bitmap;
 	
 	import core.ImageLoader;
@@ -32,26 +30,6 @@ package ui
 			UITool.removeChildren( user.container );
 			
 			addBitmap( index );
-			TweenLite.killTweensOf( this );
-			
-			//Tween内容
-			rotationY = ROTATION_Y;
-			scaleX = scaleY = 0.8;
-			x = WIDTH * 2;
-			y = 30;
-			//Tween内容
-			
-			TweenLite.to( this, DURATION, { rotationY:0, scaleX:1, scaleY:1, x:0, onComplete:onComplete } );
-		}
-		private function onComplete():void
-		{
-			TweenLite.killTweensOf( this );
-			TweenLite.to( this, DURATION, { rotationY:-ROTATION_Y, scaleX:-0.8, scaleY:-0.8, x:-2 * WIDTH, onComplete:onCompleteFinal } );
-		}
-		private function onCompleteFinal():void
-		{
-			TweenLite.killTweensOf( this );
-			roleList.push( this );
 		}
 		public function addBitmap( index:int ):void
 		{

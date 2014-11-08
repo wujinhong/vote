@@ -20,7 +20,7 @@ package core
 		
 		public static function getUIBitmapData( displayObject:DisplayObject ):BitmapData
 		{
-			var bmd:BitmapData = new BitmapData( displayObject.width, displayObject.height );
+			var bmd:BitmapData = new BitmapData( displayObject.width, displayObject.height, true, 0x00000000 );
 			bmd.draw( displayObject );
 			return bmd;
 		}
@@ -43,7 +43,7 @@ package core
 			for( var i:int = 0; i < childrenNum; i++ ) 
 			{
 				var child:DisplayObject = container.getChildAt( i );
-				stopMovieClip( mc );
+				stopMovieClip( child );
 				if( child is MovieClip )
 				{
 					mc = child as MovieClip;
@@ -63,7 +63,7 @@ package core
 			for( var i:int = 0; i < childrenNum; i++ ) 
 			{
 				var child:DisplayObject = container.getChildAt( i );
-				playMovieClip( mc );
+				playMovieClip( child );
 				if( child is MovieClip )
 				{
 					mc = child as MovieClip;

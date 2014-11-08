@@ -7,6 +7,7 @@ package ui
 	import flash.events.Event;
 	
 	import core.ImageLoader;
+	import core.UITool;
 	
 	/**
 	 * VoteRole
@@ -63,8 +64,6 @@ package ui
 			_func = func;
 			_roleIndex = roleIndex;
 			_bitmap = new Bitmap( ImageLoader.get().getBitmapData( Vote.USER[ roleIndex ].icon ) );
-			/*_bitmap.scaleX = ROLE_WIDTH / _bitmap.width;
-			_bitmap.scaleY = ROLE_HEIGHT / _bitmap.height;*/
 			_bitmap.width = ROLE_WIDTH;
 			_bitmap.height = ROLE_HEIGHT;
 			_bitmap.x = -_bitmap.width / 2;
@@ -85,6 +84,7 @@ package ui
 				
 				var frame:Frame = new Frame();
 				addChild( frame );
+				UITool.removeChildren( frame.container );
 			}
 			addChild( _bitmap );
 			cacheAsBitmap = true;
@@ -94,7 +94,6 @@ package ui
 		}
 		private function setOrigin():void
 		{
-//			_bitmap.scaleX = _bitmap.scaleY = 1;
 			scaleX = scaleY = 1;
 		}
 		/**

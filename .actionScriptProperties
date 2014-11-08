@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<actionScriptProperties analytics="false" mainApplicationPath="Lottery.as" projectUUID="c6f1da54-1fd8-4cd0-8108-1bdfcf2e1693" version="11">
+<actionScriptProperties analytics="false" mainApplicationPath="WallShower.as" projectUUID="c6f1da54-1fd8-4cd0-8108-1bdfcf2e1693" version="11">
   <compiler additionalCompilerArguments="-locale en_US" advancedTelemetry="false" autoRSLOrdering="true" copyDependentFiles="true" fteInMXComponents="false" generateAccessible="false" htmlExpressInstall="true" htmlGenerate="false" htmlHistoryManagement="true" htmlPlayerVersionCheck="true" includeNetmonSwc="false" outputFolderPath="bin-debug" removeUnusedRSL="true" sourceFolderPath="src" strict="true" targetPlayerVersion="0.0.0" useApolloConfig="false" useDebugRSLSwfs="true" useFlashSDK="false" verifyDigests="true" warn="true">
     <compilerSourcePath/>
     <libraryPath defaultLinkType="0">
@@ -33,9 +33,9 @@
     <sourceAttachmentPath/>
   </compiler>
   <applications>
-    <application path="Lottery.as"/>
-    <application path="WallShower.as"/>
     <application path="MatchLover.as"/>
+    <application path="Vote.as"/>
+    <application path="Lottery.as"/>
   </applications>
   <modules/>
   <workers/>

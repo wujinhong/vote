@@ -10,7 +10,7 @@ package ui
 		private var _tf0:TextField;
 		private var _tf1:TextField;
 		private var isTF0:Boolean = false;
-		private var HEIGHT:Number = 54;
+		private var HEIGHT:Number = 24;
 		public function Lable()
 		{
 			super();

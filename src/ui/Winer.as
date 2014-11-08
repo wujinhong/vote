@@ -18,10 +18,10 @@ package ui
 			_lotteryLight = new LotteryLight();
 			addChildAt( _lotteryLight, 0 );
 			UITool.stopMovieClip( _lotteryLight );
-			
+			_lotteryLight.scaleX = _lotteryLight.scaleY = 1.4;
 			UITool.removeChildren( container );
 			
-			y = 230;
+			y = 430;
 		}
 		public function addBitmap():void
 		{

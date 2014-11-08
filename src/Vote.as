@@ -7,9 +7,8 @@ package
 	import flash.display.StageAlign;
 	import flash.display.StageScaleMode;
 	import flash.events.Event;
+	import flash.external.ExternalInterface;
 	import flash.system.Security;
-	import flash.utils.clearInterval;
-	import flash.utils.setInterval;
 	import flash.utils.setTimeout;
 	
 	import core.ImageLoader;
@@ -30,7 +29,6 @@ package
 	import ui.Number2;
 	import ui.Number3;
 	import ui.RotationCircle;
-	import ui.Title;
 	import ui.VoteRole;
 	
 	/**
@@ -40,7 +38,7 @@ package
 	 * @date Oct 22, 2014   11:11:26 AM
 	 * @version 1.0
 	 */
-	[SWF( height = 540, width = 960, frameRate = 60 )]
+	[SWF( height = 540, width = 1920, frameRate = 60 )]
 	public class Vote extends Sprite
 	{
 		public static const BACKGROUND_WIDTH:Number = 1920;
@@ -58,6 +56,9 @@ package
 		public static var USER:Vector.<Object> = new Vector.<Object>();
 		public static var NEW_USER:Array = [];
 		public static const EMPTY_ROLE:String = "empty_role";
+		/**
+		 *第三帧 33 
+		 */		
 		public static const END_FRAME_INDEX:uint = 33;
 		private var _mouseDir:int;
 		private var _layer:Sprite;
@@ -72,7 +73,6 @@ package
 		private var _lightCircleLayer:Sprite;
 		private var _circle:Circle;
 		private var _light:Light;
-		private var _title:Title;
 		private var _step:uint = 0;
 		private var _status:uint = 1;
 		private var _roleLayer:Sprite;
@@ -146,35 +146,18 @@ package
 			
 			onStageResize();
 			
-			/*_title = new Title();
-			_layer.addChild( _title );
-			_title.y = _circle.width / 2;*/
-			
 			JSCall.addCallback( URL.ASFunc, ASFunc );
 			JSCall.CallJS( URL.JSFunc );
-//			onClosure();//测试代码
-//			setTimeout( gotoCenter, 2000 );
-			onReady();
-		}
-		
-		private function gotoCenter():void
-		{
-			TweenLite.to( _title, 1, { alpha:0.1, scaleX:0.1, scaleY:0.1, y:_title.y - 100, onComplete:onReady } );
-		}
-		private function onReady():void
-		{
-			if( null != _title )
+			if( !ExternalInterface.available )
 			{
-				_layer.removeChild( _title );
-				_title = null;
+				ASFunc();
 			}
-			begin();
 		}
 		
 		/**
 		 *被JS调用的方法
 		 */
-		private function ASFunc( barid:int = 0, eventid:int = 0, token:String = "", obj:Object = null ):void
+		private function ASFunc( barid:int = 43, eventid:int = 151, token:String = "842682394cf9a9a0788cf86af7cf2ed9", obj:Object = null ):void
 		{
 			_barid = barid;
 			_eventid = eventid;
@@ -191,13 +174,12 @@ package
 		}
 		/**
 		 *分三步：
-		 * 1、中心图标缩小消失后；
-		 * 2、JS调用完AS方法
-		 * 3、图标加载完成 
-		 */		
+		 * 1、JS调用完AS方法
+		 * 2、图标加载完成 
+		 */
 		private function begin():void
 		{
-			if( ++_step == 3 )
+			if( ++_step == 2 )
 			{
 				addRoles();
 				pollPost();
@@ -253,6 +235,7 @@ package
 			}
 			if( 0 != ret.code )
 			{//ret.code == 0说明为返回成功
+				trace( "Vote.onBasicInfo( ret ):ret.code = " + ret.code  );
 				return;
 			}
 			
@@ -311,7 +294,9 @@ package
 		{
 			if( null == ImageLoader.get().getBitmapData( EMPTY_ROLE ) )
 			{
-				var bmd:BitmapData = UITool.getUIBitmapData( new EmptyRole() );
+				var role:EmptyRole = new EmptyRole();
+				UITool.removeChildren( role.frame.container );
+				var bmd:BitmapData = UITool.getUIBitmapData( role );
 				ImageLoader.get().addBitmapData( EMPTY_ROLE, bmd )
 			}
 			if( _emptyRoleNum > 0 )
@@ -390,33 +375,22 @@ package
 			}
 			if( 0 != ret.code )
 			{//ret.code == 0说明为返回成功
+				trace( "Vote.onResult:ret.code = " + ret.code );
 				return;
 			}
 			RANK_LIST.push.apply( null, ret.data );
-			/*RANK_LIST.sort( function( ui1:Object, ui2:Object ):Number
-			{
-				if( ui1.ranking > ui2.ranking )
-				{
-					return 1;
-				}
-				
-				if( ui1.ranking < ui2.ranking )
-				{
-					return -1;
-				}
-				return 0;
-			} );*/
 			var rankLength:int = RANK_LIST.length > 3 ? 3 :RANK_LIST.length;
 			for( var i:int = 0; i < rankLength; i++ )
 			{
 				ImageLoader.get().getImageCallback( RANK_LIST[ i ].icon, checkRankIconLoaded );
+				ImageLoader.get().getImageCallback( RANK_LIST[ i ].img, checkRankIconLoaded );
 			}
 		}
 		private function checkRankIconLoaded( bitmapData:BitmapData = null ):void
 		{
 			++_loadLength;
 			trace( "checkRankIconLoaded : _loadLength : " + _loadLength );
-			if( _loadLength != RANK_LIST.length + 1 )
+			if( _loadLength != RANK_LIST.length * 2 + 1 )
 			{
 				return;
 			}
@@ -428,6 +402,7 @@ package
 			trace("Vote.showRankCuprum()");
 			
 			_centerShine.stop();
+			_centerShine.visible = false;
 			if( null != _number3 )
 			{
 				return;
@@ -448,6 +423,7 @@ package
 		}
 		private function showRankSilver():void
 		{
+			_centerShine.visible = true;
 			_centerShine.addEventListener( Event.ENTER_FRAME, onCenterShineEnterFrame2 );
 			_centerShine.gotoAndPlay( 1 );
 		}
@@ -457,6 +433,7 @@ package
 			if( _centerShine.currentFrame >= END_FRAME_INDEX )
 			{
 				_centerShine.stop();
+				_centerShine.visible = false;
 				_centerShine.removeEventListener( Event.ENTER_FRAME, onCenterShineEnterFrame2 );
 				if( null != _number2 )
 				{
@@ -468,6 +445,7 @@ package
 		}
 		private function showRankGold():void
 		{
+			_centerShine.visible = true;
 			_centerShine.addEventListener( Event.ENTER_FRAME, onCenterShineEnterFrame3 );
 			_centerShine.gotoAndPlay( 1 );
 		}
@@ -476,6 +454,7 @@ package
 			if( _centerShine.currentFrame >= END_FRAME_INDEX )
 			{
 				_centerShine.stop();
+				_centerShine.visible = false;
 				_centerShine.removeEventListener( Event.ENTER_FRAME, onCenterShineEnterFrame3 );
 				_centerShine.visible = false;
 				if( null != _number1 )

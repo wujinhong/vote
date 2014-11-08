@@ -5,6 +5,7 @@ package ui
 	import flash.display.Bitmap;
 	
 	import core.ImageLoader;
+	import core.UITool;
 	
 	import fl.motion.Animator;
 	import fl.motion.MotionEvent;
@@ -21,12 +22,14 @@ package ui
 		private var _animator:Animator;
 		private var _bitmap:Bitmap;
 		private var _motionIndex:uint = 0;
+		public static var CIRCLE_SCALE:Number = 0.4;
+		private var SCALE:Number = 0.739;
 		private var _motionList:Vector.<Object> = new <Object>[
-			{ scaleX:1, scaleY:1, onComplete:onMotionEnd },
-			{ scaleX:0.8, scaleY:0.8, onComplete:onMotionEnd },
-			{ scaleX:1, scaleY:1, onComplete:onMotionEnd },
-			{ scaleX:0.9, scaleY:0.9, onComplete:onMotionEnd },
-			{ scaleX:1, scaleY:1, onComplete:onMotionEnd },
+			{ scaleX:CIRCLE_SCALE, scaleY:CIRCLE_SCALE, onComplete:onMotionEnd },
+			{ scaleX:0.2, scaleY:0.2, onComplete:onMotionEnd },
+			{ scaleX:CIRCLE_SCALE, scaleY:CIRCLE_SCALE, onComplete:onMotionEnd },
+			{ scaleX:0.2, scaleY:0.2, onComplete:onMotionEnd },
+			{ scaleX:CIRCLE_SCALE, scaleY:CIRCLE_SCALE, onComplete:onMotionEnd },
 		];
 		public function Number1()
 		{
@@ -36,18 +39,26 @@ package ui
 			_bitmap = new Bitmap( ImageLoader.get().getBitmapData( info.icon ) );
 			
 			this.circle.image.addChild( _bitmap );
-			circle.scaleX = circle.scaleY = 0.2;
-			/*circle.scaleX = circle.scaleY = 0.075;
-			_animator = new Animator( MotionXML.xmls[ _motionIndex ], this.circle );
-			_animator.addEventListener( MotionEvent.MOTION_END, onMotionEnd );
-			_animator.play();*/
-			
 			_bitmap.x = -_bitmap.width / 2;
 			_bitmap.y = -_bitmap.height / 2;
+		
+			UITool.removeChildren( img.container );
+			_bitmap = new Bitmap( ImageLoader.get().getBitmapData( info.img ) );
+			img.container.addChild( _bitmap );
+			_bitmap.width = img.width / SCALE - 16;
+			_bitmap.height = img.height / SCALE - 16;
+			_bitmap.x = -_bitmap.width / 2;
+			_bitmap.y = 8;
+			
+			circle.scaleX = circle.scaleY = 0.01;
+			img.scaleX = img.scaleY = 0.01;
+			
 			this.info.rankTF.text = "第一名";
 			this.info.nameTF.text = info.nick + "";
 			this.info.scoreTF.text = info.vote_num + "票";
+			info.alpha = 0;
 			TweenLite.to( circle, MotionXML.TREMBLE2, _motionList[ _motionIndex ] );
+			TweenLite.to( img, MotionXML.TREMBLE2, { scaleX:SCALE, scaleY:SCALE } );
 		}
 		protected function onMotionEnd( e:MotionEvent = null ):void
 		{
