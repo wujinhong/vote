@@ -1,7 +1,5 @@
 package
 {
-	import com.greensock.TweenLite;
-	
 	import flash.display.Bitmap;
 	import flash.display.BitmapData;
 	import flash.display.Sprite;
@@ -16,6 +14,7 @@ package
 	import core.ImageLoader;
 	import core.Looper;
 	import core.UITool;
+	import core.interfaces.ILeap;
 	
 	import net.HttpMgr;
 	import net.JSCall;
@@ -44,7 +43,7 @@ package
 	 * @version 1.0
 	 */
 	[SWF( height = 540, width = 960, frameRate = 60 )]
-	public class MatchLover extends Sprite
+	public class MatchLover extends Sprite implements ILeap
 	{
 		public static const BACKGROUND_WIDTH:Number = 1920;
 		public static const BACKGROUND_HEIGHT:Number = 1080;
@@ -92,7 +91,6 @@ package
 		private var _manIndex:int;
 		private var _UP_DURATION:Number = 0.3;
 		private var SUBTRACT:Number = 0.1;
-		private var DIAMETER:Number = 572;
 		private var _topIcon:TopIcon;
 		/**
 		 * {
@@ -120,12 +118,20 @@ package
 		private var _newBoy:Array;
 		private var _newGirl:Array;
 		private var _newLoadLength:uint;
+		private var speed:Number = 96;
+		/**
+		 *572
+		 */		
+		private var DIAMETER:Number = speed * 6;
+		/*private var speed:Number = 16;
+		private var DIAMETER:Number = speed * 36;*/
+		private var _centerLayer:Sprite;
 		public function MatchLover()
 		{
 			super();
 			Security.allowDomain( "*" );
 			Security.allowInsecureDomain( "*" );
-			if( null != stage ) 
+			if( null != stage )
 			{
 				initUI();
 				return;
@@ -214,19 +220,19 @@ package
 			_manIndex = 0;
 			
 			var bitmap:Bitmap = new Bitmap( ImageLoader.get().getBitmapData( _girlData[ _girlIndex ].icon ) );
-			_girl0.container.addChild( bitmap );
+			_girl1.container.addChild( bitmap );
 			setGirlBack( _girl0 );
+			setGirlBack( _girl1 );
 			setBitmapPos( bitmap );
 			
 			bitmap = new Bitmap( ImageLoader.get().getBitmapData( _manData[ _manIndex ].icon ) );
-			_man0.container.addChild( bitmap );
-			setBitmapPos( bitmap );
+			_man1.container.addChild( bitmap );
 			_man0.y = DIAMETER;
+			_man1.y = DIAMETER;
+			setBitmapPos( bitmap );
 			
 			var params:Object = { barid:_barid, token:_token };
 			HttpMgr.get().post( URL2.pair, params, onPair );
-			
-			stage.addEventListener( KeyboardEvent.KEY_DOWN, roll );
 		}
 		private function roll( e:KeyboardEvent ):void
 		{
@@ -243,19 +249,58 @@ package
 					UITool.stopMovieClip( _topLight );
 					UITool.playMovieClip( _heartLine );
 					_heartLine.visible = true;
+					failPanel.visible = false;
 					
-					TweenLite.killTweensOf( _man0 );
-					TweenLite.killTweensOf( _girl0 );
-					TweenLite.to( _man0, _UP_DURATION, { y:0, onComplete:onManComplete0 } );
+					_man0.visible = true;
+					_man1.visible = true;
+					_girl0.visible = true;
+					_girl1.visible = true;
+					_label0.visible = true;
+					_label1.visible = true;
+					
+					Looper.get().addLeapComponent( this );
 					_label0.show( _manData[ _manIndex ].nick, _UP_DURATION );
-					
-					TweenLite.to( _girl0, _UP_DURATION, { y:0, onComplete:onGirlComplete0 } );
 					_label1.show( _girlData[ _girlIndex ].nick, _UP_DURATION );
+					
+					stage.addEventListener( KeyboardEvent.KEY_DOWN, showResult );
 					break;
 				default:
 					break;
 			}
 		}
+		
+		public function onTick(  ):void
+		{
+			_man0.y -= speed;
+			_man1.y -= speed;
+			if( 0 == _man0.y )
+			{
+				setMan( _man1 );
+				_label0.show( _manData[ _manIndex ].nick, _UP_DURATION );
+			}
+			if( 0 == _man1.y )
+			{
+				setMan( _man0 );
+				_label0.show( _manData[ _manIndex ].nick, _UP_DURATION );
+			}
+			_girl0.y += speed;
+			_girl1.y += speed;
+			if( 0 == _girl0.y )
+			{
+				setGirl( _girl1 );
+				_label1.show( _girlData[ _girlIndex ].nick, _UP_DURATION );
+			}
+			if( 0 == _girl1.y )
+			{
+				setGirl( _girl0 );
+				_label1.show( _girlData[ _girlIndex ].nick, _UP_DURATION );
+			}
+		}
+		public function get priority():Number
+		{
+			return 0;
+		}
+		
 		
 		private function loadNewImage():void
 		{
@@ -295,8 +340,9 @@ package
 			_loadLength++
 			if( _loadLength == 2 )
 			{
-				stage.addEventListener( KeyboardEvent.KEY_DOWN, showResult );
 				trace( "MatchLover.matchLoverImagesLoaded( bitmapData );配对男女图片加载成功！" );
+				stage.removeEventListener( KeyboardEvent.KEY_DOWN, roll );
+				stage.addEventListener( KeyboardEvent.KEY_DOWN, roll );
 			}
 		}
 		
@@ -307,13 +353,21 @@ package
 				case Keyboard.SPACE:
 					trace( "MatchLover.showResult( e ):显示结果" );
 					stage.removeEventListener( KeyboardEvent.KEY_DOWN, showResult );
+					
+					Looper.get().removeLeapComponent( this );
+					
 					if( _fail )
 					{
-						if( null == failPanel )
-						{
-							failPanel = new Fail();
-						}
-						_layer.addChild( failPanel );
+						failPanel.visible = true;
+						
+						_man0.visible = false;
+						_man1.visible = false;
+						_girl0.visible = false;
+						_girl1.visible = false;
+						
+						_label0.visible = false;
+						_label1.visible = false;
+						
 						stage.addEventListener( KeyboardEvent.KEY_DOWN, roll );
 					}
 					else
@@ -338,6 +392,8 @@ package
 			{//ret.code == 0说明为返回成功
 				trace( "onPair:ret.code = " + ret.code );
 				_fail = true;
+				stage.removeEventListener( KeyboardEvent.KEY_DOWN, roll );
+				stage.addEventListener( KeyboardEvent.KEY_DOWN, roll );
 				return;
 			}
 			_fail = false;
@@ -356,12 +412,6 @@ package
 		}
 		private function showSeccess():void
 		{
-			TweenLite.killTweensOf( _man0 );
-			TweenLite.killTweensOf( _man1 );
-			
-			TweenLite.killTweensOf( _girl0 );
-			TweenLite.killTweensOf( _girl1 );
-			
 			var bmd:BitmapData = ImageLoader.get().getBitmapData( _matchBoyInfo.icon );
 			var bitmap:Bitmap = new Bitmap( bmd );
 			UITool.removeChildren( _man1.container );
@@ -408,6 +458,7 @@ package
 			if( ( _success.ui.currentFrame >= 10 || _success.ui.currentLabel == "stop" ) && 
 				( _topLight.mc.currentFrame >= 10 || _topLight.mc.currentLabel == "stop" ) )
 			{
+				stage.removeEventListener( KeyboardEvent.KEY_DOWN, roll );
 				stage.addEventListener( KeyboardEvent.KEY_DOWN, roll );
 			}
 		}
@@ -420,50 +471,6 @@ package
 			man.container.addChild( bitmap );
 			man.y = DIAMETER;
 			setBitmapPos( bitmap );
-		}
-		/**
-		 *第一个到达中心
-		 */		
-		private function onManComplete0():void
-		{
-			TweenLite.killTweensOf( _man0 );
-			TweenLite.killTweensOf( _man1 );
-			setMan( _man1 );
-			TweenLite.to( _man1, _UP_DURATION, { y:0, onComplete:onManComplete1 } );
-			_label0.show( _manData[ _manIndex ].nick, _UP_DURATION );
-			TweenLite.to( _man0, _UP_DURATION, { y:-DIAMETER } );
-		}
-		/**
-		 *第二个到达中心
-		 */
-		private function onManComplete1():void
-		{
-			TweenLite.killTweensOf( _man0 );
-			TweenLite.killTweensOf( _man1 );
-			setMan( _man0 );
-			
-			TweenLite.to( _man0, _UP_DURATION, { y:0, onComplete:onManComplete0 } );
-			_label0.show( _manData[ _manIndex ].nick, _UP_DURATION );
-			TweenLite.to( _man1, _UP_DURATION, { y:-DIAMETER } );
-		}
-		private function onGirlComplete0():void
-		{
-			TweenLite.killTweensOf( _girl0 );
-			TweenLite.killTweensOf( _girl1 );
-			setGirl( _girl1 );
-			
-			TweenLite.to( _girl1, _UP_DURATION, { y:0, onComplete:onGirlComplete1 } );
-			_label1.show( _girlData[ _girlIndex ].nick, _UP_DURATION );
-			TweenLite.to( _girl0, _UP_DURATION, { y:DIAMETER } );
-		}
-		private function onGirlComplete1():void
-		{
-			TweenLite.killTweensOf( _girl0 );
-			TweenLite.killTweensOf( _girl1 );
-			setGirl( _girl0 );
-			TweenLite.to( _girl0, _UP_DURATION, { y:0, onComplete:onGirlComplete0 } );
-			_label1.show( _girlData[ _girlIndex ].nick, _UP_DURATION );
-			TweenLite.to( _girl1, _UP_DURATION, { y:DIAMETER } );
 		}
 		private function setGirl( girl:RoleContainer ):void
 		{
@@ -531,32 +538,35 @@ package
 			_topIcon = new TopIcon();
 			_layer.addChild( _topIcon );
 			
+			_centerLayer = new Sprite();
+			_layer.addChild( _centerLayer );
+			
 			_topLight = new TopLight();
 			_layer.addChild( _topLight );
 			UITool.stopMovieClip( _topLight );
 			
 			_circle = new RotationCircle()
-			_layer.addChild( _circle );
+			_centerLayer.addChild( _circle );
 			_circle.y = _circle.width / 2;
 			_circle.scaleX = _circle.scaleY = 0.66;
 			
 			_smallHearts = new SmallHearts();
-			_layer.addChild( _smallHearts );
+			_centerLayer.addChild( _smallHearts );
 			UITool.stopMovieClip( _smallHearts );
 			
 			_heartLine = new HeartLine();
-			_layer.addChild( _heartLine );
+			_centerLayer.addChild( _heartLine );
 			UITool.stopMovieClip( _heartLine );
 			
 			_heart = new Heart();
-			_layer.addChild( _heart );
+			_centerLayer.addChild( _heart );
 			
 			_manBigIcon = new Man();
-			_layer.addChild( _manBigIcon );
+			_centerLayer.addChild( _manBigIcon );
 			UITool.removeChildren( _manBigIcon.icon.container );
 			
 			_girlBigIcon = new Girl();
-			_layer.addChild( _girlBigIcon );
+			_centerLayer.addChild( _girlBigIcon );
 			UITool.removeChildren( _girlBigIcon.icon.container );
 			
 			_girl0 = new RoleContainer();
@@ -578,12 +588,21 @@ package
 			_label0.x = -600;
 			_label1.x = 200;
 			
-			_layer.addChild( _label0 );
-			_layer.addChild( _label1 );
+			_centerLayer.addChild( _label0 );
+			_centerLayer.addChild( _label1 );
 			
 			_success = new SuccessClip();
-			_layer.addChild( _success );
+			_centerLayer.addChild( _success );
 			_success.visible = false;
+			
+			failPanel = new Fail();
+			_centerLayer.addChild( failPanel );
+			failPanel.visible = false;
+			failPanel.graphics.beginFill( 0x000000, 0.5 );
+			failPanel.graphics.drawRect( -BACKGROUND_WIDTH, -BACKGROUND_HEIGHT, BACKGROUND_WIDTH * 2, BACKGROUND_HEIGHT * 2 );
+			failPanel.graphics.endFill();
+			
+//			_centerLayer.y -= 50;
 		}
 		private function onStageResize( e:Event = null ):void
 		{

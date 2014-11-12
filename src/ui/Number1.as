@@ -24,6 +24,7 @@ package ui
 		private var _motionIndex:uint = 0;
 		public static var CIRCLE_SCALE:Number = 0.4;
 		private var SCALE:Number = 0.739;
+		private var CIRCLE_SCALE:Number = 0.366;
 		private var _motionList:Vector.<Object> = new <Object>[
 			{ scaleX:CIRCLE_SCALE, scaleY:CIRCLE_SCALE, onComplete:onMotionEnd },
 			{ scaleX:0.2, scaleY:0.2, onComplete:onMotionEnd },
@@ -39,16 +40,17 @@ package ui
 			_bitmap = new Bitmap( ImageLoader.get().getBitmapData( info.icon ) );
 			
 			this.circle.image.addChild( _bitmap );
+			_bitmap.width = circle.width / CIRCLE_SCALE;
+			_bitmap.height = circle.height / CIRCLE_SCALE;
 			_bitmap.x = -_bitmap.width / 2;
 			_bitmap.y = -_bitmap.height / 2;
 		
 			UITool.removeChildren( img.container );
 			_bitmap = new Bitmap( ImageLoader.get().getBitmapData( info.img ) );
 			img.container.addChild( _bitmap );
-			_bitmap.width = img.width / SCALE - 16;
+			_bitmap.width = img.width / SCALE - 32;
 			_bitmap.height = img.height / SCALE - 16;
 			_bitmap.x = -_bitmap.width / 2;
-			_bitmap.y = 8;
 			
 			circle.scaleX = circle.scaleY = 0.01;
 			img.scaleX = img.scaleY = 0.01;

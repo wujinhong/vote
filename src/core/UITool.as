@@ -5,6 +5,7 @@ package core
 	import flash.display.DisplayObjectContainer;
 	import flash.display.MovieClip;
 	import flash.events.Event;
+	import flash.geom.Matrix;
 	import flash.utils.Dictionary;
 
 	/**
@@ -18,10 +19,12 @@ package core
 	{
 		private static var funcDiction:Dictionary = new Dictionary();
 		
-		public static function getUIBitmapData( displayObject:DisplayObject ):BitmapData
+		public static function getUIBitmapData( ds:DisplayObject ):BitmapData
 		{
-			var bmd:BitmapData = new BitmapData( displayObject.width, displayObject.height, true, 0x00000000 );
-			bmd.draw( displayObject );
+			var bmd:BitmapData = new BitmapData( ds.width, ds.height, true, 0x00FFFFFF );
+			var mat:Matrix = ds.transform.matrix.clone();
+			mat.tx = mat.ty = 0;
+			bmd.draw( ds, mat, ds.transform.colorTransform, ds.blendMode, bmd.rect, true );
 			return bmd;
 		}
 		public static function removeChildren( container:DisplayObjectContainer ):void
@@ -40,7 +43,7 @@ package core
 			var container:DisplayObjectContainer = displayObject as DisplayObjectContainer;
 			var mc:MovieClip;
 			var childrenNum:uint = container.numChildren;
-			for( var i:int = 0; i < childrenNum; i++ ) 
+			for( var i:int = 0; i < childrenNum; i++ )
 			{
 				var child:DisplayObject = container.getChildAt( i );
 				stopMovieClip( child );

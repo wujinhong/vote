@@ -84,6 +84,7 @@ package ui
 				
 				var frame:Frame = new Frame();
 				addChild( frame );
+				frame.y = frame.height / 2;
 				UITool.removeChildren( frame.container );
 			}
 			addChild( _bitmap );

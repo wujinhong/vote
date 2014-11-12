@@ -18,10 +18,15 @@ package ui
 			_lotteryLight = new LotteryLight();
 			addChildAt( _lotteryLight, 0 );
 			UITool.stopMovieClip( _lotteryLight );
-			_lotteryLight.scaleX = _lotteryLight.scaleY = 1.4;
+			_lotteryLight.scaleX = _lotteryLight.scaleY = 1.2;
+			_lotteryLight.y = 40;
 			UITool.removeChildren( container );
 			
 			y = 430;
+			
+			this.graphics.beginFill( 0x000000, 0.9 );
+			this.graphics.drawRect( -Lottery.BACKGROUND_WIDTH, -Lottery.BACKGROUND_HEIGHT, Lottery.BACKGROUND_WIDTH * 2, Lottery.BACKGROUND_HEIGHT * 2 );
+			this.graphics.endFill();
 		}
 		public function addBitmap():void
 		{
@@ -37,9 +42,9 @@ package ui
 			UITool.playMovieClip( _lotteryLight );
 			
 			alpha = 0;
-			scaleX = scaleY = 0.1;
+			scaleX = scaleY = 0.01;
 			TweenLite.killTweensOf( this );
-			TweenLite.to( this, 1, { scaleX:1, scaleY:1, alpha:1} );
+			TweenLite.to( this, 4, { scaleX:1, scaleY:1, alpha:1} );
 		}
 		public function stopLight():void
 		{

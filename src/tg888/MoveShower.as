@@ -1,9 +1,12 @@
 package tg888
 {
-	import flash.display.*;
-	
+	import flash.display.Bitmap;
+	import flash.display.Loader;
+	import flash.display.Sprite;
 	import flash.events.Event;
+	import flash.events.IOErrorEvent;
 	import flash.events.TimerEvent;
+	import flash.events.UncaughtErrorEvent;
 	import flash.net.LocalConnection;
 	import flash.net.URLRequest;
 	import flash.utils.Timer;
@@ -70,9 +73,20 @@ package tg888
 		{			
 			removeBitmap();
 			l=new Loader();
-			l.contentLoaderInfo.addEventListener(Event.COMPLETE,showBitMap);			
+			l.contentLoaderInfo.addEventListener(Event.COMPLETE,showBitMap);	
+			l.contentLoaderInfo.addEventListener( IOErrorEvent.IO_ERROR, ioErrorHandler );
+			l.contentLoaderInfo.uncaughtErrorEvents.addEventListener( UncaughtErrorEvent.UNCAUGHT_ERROR, handleUncaughtErrors, false, 0, true);		
 			l.load(new URLRequest(s));			
 		}		
+		
+		protected function handleUncaughtErrors( e:UncaughtErrorEvent ):void
+		{
+			trace( "MoveShower.handleUncaughtErrors( e )" + e.toString() );
+		}
+		protected function ioErrorHandler( e:IOErrorEvent ):void
+		{
+			trace( "MoveShower.ioErrorHandler( e )" + e.toString() );
+		}
 		private function removeBitmap():void 
 		{
 			if (_bmp) {

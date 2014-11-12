@@ -10,6 +10,7 @@ package {
 	import flash.ui.Keyboard;
 	
 	import core.ImageLoader;
+	import core.UITool;
 	
 	import net.HttpMgr;
 	import net.JSCall;
@@ -20,6 +21,7 @@ package {
 	
 	import ui.LotteryBackground;
 	import ui.LotteryFail;
+	import ui.LotteryLoading;
 	import ui.Winer;
 	
 	[SWF( height = 1080, width = 1920, frameRate = 60 )]
@@ -74,6 +76,9 @@ package {
 		private var mainWall:MainWall;
 		private var _lotteryFail:LotteryFail;
 		private var _fail:Boolean = false;
+		private var _loading:LotteryLoading;
+		private var _isLoading:Boolean = true;
+		private var _rolling:Boolean = false;
 		
 		public function Lottery()
 		{
@@ -109,6 +114,8 @@ package {
 			_token = token;
 			var params:Object = { barid:_barid, token:_token };
 			HttpMgr.get().post( URL3.barFriends, params, onLotteryList );
+			_loading.visible = true;
+			UITool.playMovieClip( _loading );
 		}
 		
 		private function onLotteryList( ret:Object ):void
@@ -123,18 +130,13 @@ package {
 				return;
 			}
 			lotteryData.push.apply( null, ret.data );
-			
-			loadImage();
-		}
-		
-		private function loadImage():void
-		{
 			_loadLength = lotteryData.length;
 			var i:int;
 			for( i = 0; i < _loadLength; i++ )
 			{
 				ImageLoader.get().getImageCallback( lotteryData[ i ].icon, checkAllLoaded );
 			}
+			trace( "Lottery.onLotteryList( ret ); 图片加载中。" );
 		}
 		private function checkAllLoaded( bitmapData:BitmapData ):void
 		{
@@ -150,8 +152,9 @@ package {
 				trace("Lottery.begin(): no data");
 				return;
 			}
-			
+			mainWall.visible = false;
 			mainWall.start();
+			mainWall.renderView();
 			
 			var params:Object = { barid:_barid, token:_token };
 			HttpMgr.get().post( URL3.winer, params, onResult );
@@ -163,25 +166,60 @@ package {
 		}
 		private function onResult( ret:Object ):void
 		{
-			if( null == ret.data )
-			{
-				return;
-			}
+			mainWall.stopRenderView();
+			mainWall.visible = true;
+			
 			if( 0 != ret.code )
 			{//ret.code == 0说明为返回成功
 				trace( "Lottery.onResult:ret.code = " + ret.code );
 				_fail = true;
+				readyForRoll( null );
+				return;
+			}
+			if( null == ret.data )
+			{
 				return;
 			}
 			_fail = false;
 			winUser = ret.data.user;
-			ImageLoader.get().getImageCallback( winUser.icon, winUserLoaded );
+			ImageLoader.get().getImageCallback( winUser.icon, readyForRoll );
 		}
-		private function winUserLoaded( bitmapData:BitmapData ):void
+		private function readyForRoll( bitmapData:BitmapData ):void
 		{
 			trace( "Lottery.winUserLoaded( bitmapData ); 赢家图片加载成功。" );
 			
-			stage.addEventListener( KeyboardEvent.KEY_DOWN, showResult );
+			_loading.visible = false;
+			UITool.stopMovieClip( _loading );
+			_isLoading = false;
+			stage.addEventListener( KeyboardEvent.KEY_DOWN, onRoll );
+		}
+		private function onResult2( ret:Object ):void
+		{
+			_isLoading = false;
+			if( 0 != ret.code )
+			{//ret.code == 0说明为返回成功
+				trace( "Lottery.onResult:ret.code = " + ret.code );
+				_fail = true;
+				readyForRoll2( null );
+				return;
+			}
+			if( null == ret.data )
+			{
+				return;
+			}
+			_fail = false;
+			winUser = ret.data.user;
+			ImageLoader.get().getImageCallback( winUser.icon, readyForRoll2 );
+		}
+		private function readyForRoll2( bitmapData:BitmapData ):void
+		{
+			trace( "Lottery.readyForRoll2( bitmapData ); 赢家图片加载成功。" );
+			_loading.visible = false;
+			UITool.stopMovieClip( _loading );
+			if( _rolling )
+			{
+				roll();
+			}
 		}
 		private function showResult( e:KeyboardEvent ):void
 		{
@@ -201,28 +239,48 @@ package {
 						_winer.visible = true;
 					}
 					mainWall.stopRenderView();
-					stage.addEventListener( KeyboardEvent.KEY_DOWN, roll );
+					var params:Object = { barid:_barid, token:_token };
+					HttpMgr.get().post( URL3.winer, params, onResult2 );
+					_isLoading = true;
+					_rolling = false;
+					stage.addEventListener( KeyboardEvent.KEY_DOWN, onRoll );
 					break;
 				default:
 					break;
 			}
 		}
-		private function roll( e:KeyboardEvent ):void
+		private function onRoll( e:KeyboardEvent ):void
 		{
 			switch( e.keyCode )
 			{
 				case Keyboard.SPACE:
+					_rolling = true;
+					stage.removeEventListener( KeyboardEvent.KEY_DOWN, onRoll );
+					
 					_lotteryFail.visible = false;
 					_winer.visible = false;
 					_winer.stopLight();
-					mainWall.renderView();
-					stage.removeEventListener( KeyboardEvent.KEY_DOWN, roll );
-					var params:Object = { barid:_barid, token:_token };
-					HttpMgr.get().post( URL3.winer, params, onResult );
+					
+					if( !_isLoading )
+					{
+						roll();
+					}
+					else
+					{
+						_loading.visible = true;
+						UITool.playMovieClip( _loading );
+					}
 					break;
 				default:
 					break;
 			}
+		}
+		private function roll():void
+		{
+			mainWall.renderView();
+			stage.addEventListener( KeyboardEvent.KEY_DOWN, showResult );
+			_loading.visible = false;
+			UITool.stopMovieClip( _loading );
 		}
 		private function onStageResize( e:Event = null ):void
 		{
@@ -232,6 +290,7 @@ package {
 			_background.x = stage.stageWidth / 2;
 			_background.width = stage.stageWidth;
 			_background.height = stage.stageHeight;
+			_layer.scaleX = _layer.scaleY = newScaleX < newScaleY ? newScaleX : newScaleY;
 		}
 		private function initComponent():void
 		{
@@ -260,6 +319,12 @@ package {
 			_lotteryFail = new LotteryFail();
 			_layer.addChild( _lotteryFail );
 			_lotteryFail.visible = false;
+			_lotteryFail.graphics.beginFill( 0x000000, 0.5 );
+			_lotteryFail.graphics.drawRect( -BACKGROUND_WIDTH, -BACKGROUND_HEIGHT, BACKGROUND_WIDTH * 2, BACKGROUND_HEIGHT * 2 );
+			_lotteryFail.graphics.endFill();
+			
+			_loading = new LotteryLoading();
+			_layer.addChild( _loading );
 		}
 	}
 }

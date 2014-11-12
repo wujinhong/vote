@@ -57,7 +57,7 @@ package
 		public static var NEW_USER:Array = [];
 		public static const EMPTY_ROLE:String = "empty_role";
 		/**
-		 *第三帧 33 
+		 *第三帧 33
 		 */		
 		public static const END_FRAME_INDEX:uint = 33;
 		private var _mouseDir:int;

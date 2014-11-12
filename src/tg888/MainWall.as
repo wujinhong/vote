@@ -6,11 +6,8 @@ package tg888
 	import flash.events.Event;
 	import flash.events.MouseEvent;
 	import flash.events.TimerEvent;
-	import flash.external.ExternalInterface;
 	import flash.filters.BlurFilter;
 	import flash.filters.GlowFilter;
-	import flash.net.URLLoader;
-	import flash.net.URLRequest;
 	import flash.text.TextFormat;
 	import flash.utils.Timer;
 	
@@ -66,8 +63,6 @@ package tg888
 		
 		private var _loding:Loader;
 		private var _loadingIndex:int=0;
-	
-		/* action  */		 		
 		private var actionPlane:WallPlane;
 		private var _showIndex:int=-1;
 		private var _positionStop:int=0;
@@ -92,7 +87,6 @@ package tg888
 			addChild(_view);	
 			_scenes=new Scene3D();
 			_camera=new Camera3D();			
-			//addLoadingICO();		
 			_render=new BasicRenderEngine();		
 		}
 		private function loadXML():void
@@ -161,7 +155,6 @@ package tg888
 				addPlaneListeners();
 				trace( "MainWall.loadSmallPics(  ):Lottery.lotteryData.length" + Lottery.lotteryData.length);
 			}
-			renderView();
 		}
 	
 		private var _p:WallPlane;
@@ -174,10 +167,7 @@ package tg888
 			}
 			_urlTitle.push( Lottery.lotteryData[ _loadingIndex ].nick );
 			_address.push( Lottery.lotteryData[ _loadingIndex ].icon );
-			//title_list.push( flashmo_xml.file[ _loadingIndex ].@title.toString() );
-			//var dir:String = folder +"pic/"+ flashmo_xml.file[_loadingIndex].@pic.toString()+".gif";
 			var lotterRole:LotteryRole = LotteryRole.getLotteryRole( _loadingIndex );
-			
 			var bmd:BitmapData = UITool.getUIBitmapData( lotterRole );
 			var bfm:BitmapMaterial = new BitmapMaterial( bmd );
 			bfm.smooth = true;
@@ -185,6 +175,7 @@ package tg888
 			bfm.doubleSided = true;
 			materials.push( bfm );
 			var p:WallPlane = new WallPlane( _loadingIndex, bfm, 400, 500, flashmo_xml.mc[0].@plx, flashmo_xml.mc[0].@ply);
+			p.material.doubleSided = false;
 			_p = p;
 			Planes.push( p );
 			initPosition( p, outCircle );
@@ -216,7 +207,7 @@ package tg888
 		}
 		private function initPosition(p:WallPlane,c:int):void 
 		{						
-			p.rotationY = ( -p.index * anglePer ) * ( 180 / Math.PI ) + 90;
+			p.rotationY = ( -p.index * anglePer ) * ( 180 / Math.PI ) - 90;
 			p.x = Math.cos( p.index * anglePer ) * c;
 			p.z = Math.sin( p.index * anglePer ) * c;
 			p.y = p.index >= 20 ? flashmo_xml.circle[0].@yup : flashmo_xml.circle[0].@ydown;
@@ -300,7 +291,7 @@ package tg888
 		
 		private var radian:Number = 0;
 		private var speed:Number = 0.04;
-		private var radius:Number = 2500;
+		private var radius:Number = 2400;
 		private var total:int;
 		
 		private function renderTo( xx:Number, yy:Number ):void
@@ -327,13 +318,13 @@ package tg888
 		private function addPlaneListeners():void
 		{
 			removeFilters();
-			for (var i:int=0; i<Planes.length; i++) 
+			/*for (var i:int=0; i<Planes.length; i++) 
 			{
-				var plane:WallPlane=Planes[i] as WallPlane;
+				var plane:WallPlane = Planes[i] as WallPlane;
 				plane.addEventListener( InteractiveScene3DEvent.OBJECT_OVER, p_rollover );
 				plane.addEventListener( InteractiveScene3DEvent.OBJECT_OUT, p_rollout );
 				plane.addEventListener( InteractiveScene3DEvent.OBJECT_PRESS, p_click );
-			}
+			}*/
 		}
 		private function removeFilters():void
 		{
@@ -365,10 +356,10 @@ package tg888
 				_view.getChildLayer(actionPlane).filters = [];
 			}
 			actionPlane = me.target as WallPlane;
-			var g:GlowFilter=new GlowFilter();
-			g.blurX=g.blurY=flashmo_xml.filter[0].@range;
-			g.color=flashmo_xml.filter[0].@color;
-			g.alpha=flashmo_xml.filter[0].@alpha;
+			var g:GlowFilter = new GlowFilter();
+			g.blurX = g.blurY=flashmo_xml.filter[0].@range;
+			g.color = flashmo_xml.filter[0].@color;
+			g.alpha = flashmo_xml.filter[0].@alpha;
 			_view.getChildLayer( actionPlane ).filters = [g];//添加滤镜
 			
 			if( _showIndex == -1 )
@@ -383,13 +374,9 @@ package tg888
 		private function p_rollover(me:InteractiveScene3DEvent):void
 		{
 			var sp:WallPlane = me.target as WallPlane;
-		
 			_view.getChildLayer( sp ).buttonMode = true;
 			showGlow( sp );
 			showText( sp.index );
-			
-			//if(!sp.isOver)shakePlane(sp);
-			trace("-------------------")
 			sp.isOver = true;
 		}
 		private function p_rollout(me:InteractiveScene3DEvent):void
@@ -398,10 +385,6 @@ package tg888
 			_view.getChildLayer(sp).buttonMode=false;
 			hideGlow( sp );
 			hideText();
-			
-			//sp.y=sp.index>= 20?flashmo_xml.circle[0].@yup:flashmo_xml.circle[0].@ydown;
-			//trace(sp.y);
-			//TweenLite.to(sp, 1, {rotationZ:0,y:sp.index>= 20?flashmo_xml.circle[0].@yup:flashmo_xml.circle[0].@ydown,  ease:Elastic.easeOut});	
 		}
 		/**
 		 *开始显示 
@@ -432,7 +415,6 @@ package tg888
 			{
 				TweenLite.to( getShadow(actionPlane.index), 1, {x:targetX,y:_camera.y+this.shadowDown,z:targetZ,rotationX:_camerarotation,  ease:Back.easeInOut, onComplete:showComplete});
 			}
-			//hideShadow();
 			renderRotation();
 		}
 		
@@ -449,7 +431,6 @@ package tg888
 			tt.removeEventListener( TimerEvent.TIMER, doShowMC );	
 			tt = null;
 
-			//actionPlane.addEventListener(InteractiveScene3DEvent.OBJECT_PRESS, p_click);			
 			var dir:String=folder +"mov/"+ flashmo_xml.file[actionPlane.index].@pic.toString()+".gif";
 			
 			ms.play( dir );
@@ -465,7 +446,6 @@ package tg888
 			ms.addEventListener( Event.COMPLETE, showEnd );
 			ms.addEventListener( MouseEvent.CLICK, stopMOV );
 			ms.buttonMode=true;
-			//ms.addEventListener(MouseEvent.MOUSE_DOWN,dragMC);
 		}
 		private function showEnd(e:Event):void		
 		{
@@ -515,14 +495,12 @@ package tg888
 				}
 				else
 				{
-					//var bfm:BitmapFileMaterial=BitmapFileMaterial(materials[i]);
 					var g:GlowFilter = new GlowFilter();
 					g.blurX = g.blurY = flashmo_xml.filter[0].@range;
 					g.color = flashmo_xml.filter[0].@color;
 					g.alpha = flashmo_xml.filter[0].@alpha;
 					_view.getChildLayer( actionPlane ).filters = [g];
 					_view.getChildLayer( plane ).filters = [g];
-					/* _mc.filters=[g]; */
 				}
 			}
 		}	
@@ -536,9 +514,6 @@ package tg888
 		}
 		private function doHideMC():void
 		{
-			/* var tt:Timer=new Timer(1000,1);
-			tt.addEventListener(TimerEvent.TIMER,excuteHideMC)
-			tt.start();	 */
 			ms.stop();			
 			if( this.contains( ms ) ) 
 			{
@@ -552,13 +527,12 @@ package tg888
 		{
 			var tt:Timer = e.target as Timer;
 			tt.stop();
-			tt.removeEventListener(Event.COMPLETE,excuteHideMC)
+			tt.removeEventListener( Event.COMPLETE, excuteHideMC )
 			tt = null;
-			trace("stop");
-			ms.stop();			
+			ms.stop();
 			if( this.contains( ms ) )
 			{
-				removeChild(ms);
+				removeChild( ms );
 			} 				
 			addPlaneListeners();				
 			renderView();
@@ -567,16 +541,16 @@ package tg888
 		}
 		private function hidePlane():void
 		{
-			var targetX:Number=Math.cos(actionPlane.index * anglePer) * outCircle;
-			var targetZ:Number=Math.sin(actionPlane.index * anglePer) * outCircle;
-			var targetY:Number=actionPlane.index>19?flashmo_xml.circle[0].@yup:flashmo_xml.circle[0].@ydown;			
+			var targetX:Number = Math.cos(actionPlane.index * anglePer) * outCircle;
+			var targetZ:Number = Math.sin(actionPlane.index * anglePer) * outCircle;
+			var targetY:Number = actionPlane.index > 19 ? flashmo_xml.circle[0].@yup : flashmo_xml.circle[0].@ydown;			
 			TweenLite.to( actionPlane, 1, { x:targetX, y:targetY, z:targetZ, rotationX:0, ease:Back.easeOut, delay:0, onComplete:PlaneBackOver } );
 			var wp:WallPlane = this.getShadow(actionPlane.index);
 			if( null == wp )
 			{
 				return;
 			}			
-			TweenLite.to(wp, 1, {x:targetX,y:targetY+shadowDown,z:targetZ,rotationX:0,  ease:Back.easeInOut, delay:0});
+			TweenLite.to( wp, 1, { x:targetX, y:targetY+shadowDown, z:targetZ, rotationX:0, ease:Back.easeInOut, delay:0 } );
 		}		
 		private function PlaneBackOver():void
 		{			
@@ -607,34 +581,30 @@ package tg888
 		 */		
 		private function hideShadow():void
 		{
-			for(var i:int=0;i<this.shadows.length;i++)
+			for( var i:int=0;i<this.shadows.length;i++)
 			{
 				var p2:WallPlane=shadows[i] as WallPlane;
 				if(p2.index==this.actionPlane.index)
 				{		
-					//trace(p2.index+'/'+this.actionPlane.index);				
 					this._scenes.removeChild(p2);
 				}				
 			}	
 		}
 		private function showShadow():void
 		{
-			
-			for(var i:int=0;i<this.shadows.length;i++)
+			for( var i:int=0;i<this.shadows.length;i++)
 			{
 				var p2:WallPlane=shadows[i] as WallPlane;
 				
 				if(p2.index==this.actionPlane.index)
 				{		
 					this._scenes.addChild(p2);
-					//earthQuare(-1,0.5);
 				}
 			}	
 		}
 		/**
 		 *地震效果 
 		 * @param side震动方向 默认为上
-		 * 
 		 */		
 		private function earthQuare(side:int=1):void
 		{
@@ -651,7 +621,6 @@ package tg888
 		/**
 		 *摇动图片 
 		 * @param p
-		 * 
 		 */		
 		private function shakePlane(p:WallPlane,side:int=1):void
 		{
@@ -674,26 +643,23 @@ package tg888
 		}
 		private function PlaneBack(p:WallPlane,yp:Number):void
 		{
-			TweenLite.to(p, 1, {rotationZ:0,y:yp,  ease:Elastic.easeOut,onComplete:reSetPlane,onCompleteParams:[p]});	
+			TweenLite.to( p, 1, { rotationZ:0, y:yp, ease:Elastic.easeOut, onComplete:reSetPlane, onCompleteParams:[p] } );	
 		}
 		private function reSetPlane(p:WallPlane):void
 		{	
-			if(p.isShadow)
+			if( p.isShadow )
 			{
-				var down:Number=flashmo_xml.circle[0].@ydown
-				p.y=down+this.shadowDown
-				//trace(flashmo_xml.circle[0].@ydown+this.shadowDown);
+				var down:Number = flashmo_xml.circle[0].@ydown
+				p.y = down + this.shadowDown
 			}
 			else
 			{
 				p.index>= 20?flashmo_xml.circle[0].@yup:flashmo_xml.circle[0].@ydown
 				p.isOver=false;
 			}
-			//resetpositions();
 		}
 		private function getShadow(index:int):WallPlane
 		{
-			//trace(index);
 			var sha:WallPlane;
 			for(var i:int=0;i<this.shadows.length;i++)
 			{
@@ -704,7 +670,6 @@ package tg888
 					break;
 				}
 			}
-			//trace(sha+'/'+sha.index);
 			return sha;
 		}
 		private function resetpositions():void
@@ -714,7 +679,6 @@ package tg888
 			{
 				var p2:WallPlane=WallPlane(shadows[j]);
 				TweenLite.to(p2, .3, {y:yp+this.shadowDown,  ease:Elastic.easeInOut,onComplete:PlaneBack,onCompleteParams:[p,yp]});
-		
 			}
 			
 			for(var i:int;i<this.Planes.length;i++)
@@ -724,7 +688,6 @@ package tg888
 			
 				TweenLite.to(p, .3, {y:yp,  ease:Elastic.easeInOut,onComplete:PlaneBack,onCompleteParams:[p,yp]});
 			}
-			
 		}
 		private function showText(index:int):void
 		{
@@ -755,7 +718,6 @@ package tg888
 			removeEventListener(Event.ENTER_FRAME, render);
 			removeEventListener(Event.ENTER_FRAME, renderActs);
 			removeEventListener(Event.ENTER_FRAME, renderRO);
-			//trace("stop enterFrame listener");
 		}
 		private function GetMessage(s:String):String
 		{
