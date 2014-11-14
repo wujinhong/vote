@@ -18,6 +18,10 @@ package net
 		 */
 		public static const JSFunc:String = "onSWFReady";
 		/**
+		 *JS方法 shortcutKeys(int keycode)
+		 */
+		public static const shortcutKeys:String = "shortcutKeys";
+		/**
 		 *1.1 全民投票-活动基本信息
 		 */
 		public static const basicInfo:String = "http://api.moon.kklink.com/screen/voteinfo";

@@ -153,12 +153,17 @@ package
 			
 			JSCall.addCallback( URL.ASFunc, ASFunc );
 			JSCall.CallJS( URL.JSFunc );
+			stage.addEventListener( KeyboardEvent.KEY_DOWN, shortcutKeys );
 			initComponent();
 			if( !ExternalInterface.available )
 			{
 				ASFunc();
 			}
 			onStageResize();
+		}
+		protected function shortcutKeys( e:KeyboardEvent ):void
+		{
+			JSCall.CallJS( URL.shortcutKeys, e.keyCode );
 		}
 		/**
 		 *被JS调用的方法

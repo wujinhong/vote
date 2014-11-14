@@ -7,6 +7,7 @@ package
 	import flash.display.StageAlign;
 	import flash.display.StageScaleMode;
 	import flash.events.Event;
+	import flash.events.KeyboardEvent;
 	import flash.external.ExternalInterface;
 	import flash.system.Security;
 	import flash.utils.setTimeout;
@@ -148,12 +149,17 @@ package
 			
 			JSCall.addCallback( URL.ASFunc, ASFunc );
 			JSCall.CallJS( URL.JSFunc );
+			stage.addEventListener( KeyboardEvent.KEY_DOWN, shortcutKeys );
 			if( !ExternalInterface.available )
 			{
 				ASFunc();
 			}
 		}
 		
+		protected function shortcutKeys( e:KeyboardEvent ):void
+		{
+			JSCall.CallJS( URL.shortcutKeys, e.keyCode );
+		}
 		/**
 		 *被JS调用的方法
 		 */
