@@ -168,7 +168,7 @@ package
 		/**
 		 *被JS调用的方法
 		 */
-		private function ASFunc( barid:int = 43, token:String = "842682394cf9a9a0788cf86af7cf2ed9", obj:Object = null ):void
+		private function ASFunc( barid:int = 43, token:String = "72df889a48dbc8e270f4536d7ffc5747", obj:Object = null ):void
 		{
 			_barid = barid;
 			_token = token;
@@ -290,6 +290,7 @@ package
 			}
 			_girl0.y += speed;
 			_girl1.y += speed;
+			
 			if( 0 == _girl0.y )
 			{
 				setGirl( _girl1 );
@@ -342,7 +343,7 @@ package
 		}
 		private function matchLoverImagesLoaded( bitmapData:BitmapData):void
 		{
-			_loadLength++
+			_loadLength++;
 			if( _loadLength == 2 )
 			{
 				trace( "MatchLover.matchLoverImagesLoaded( bitmapData );配对男女图片加载成功！" );
@@ -421,6 +422,7 @@ package
 			var bitmap:Bitmap = new Bitmap( bmd );
 			UITool.removeChildren( _man1.container );
 			_man1.container.addChild( bitmap );
+			setMan( _man0 );
 			_man1.y = 0;
 			setBitmapPos( bitmap );
 			
@@ -428,8 +430,12 @@ package
 			bitmap = new Bitmap( bmd );
 			UITool.removeChildren( _girl1.container );
 			_girl1.container.addChild( bitmap );
+			setGirl( _girl0 );
 			_girl1.y = 0;
 			setBitmapPos( bitmap );
+			
+			_label0.show( _matchBoyInfo.nick, _UP_DURATION );
+			_label1.show( _matchGirlInfo.nick, _UP_DURATION );
 			
 			_smallHearts.visible = true;
 			
@@ -606,8 +612,6 @@ package
 			failPanel.graphics.beginFill( 0x000000, 0.5 );
 			failPanel.graphics.drawRect( -BACKGROUND_WIDTH, -BACKGROUND_HEIGHT, BACKGROUND_WIDTH * 2, BACKGROUND_HEIGHT * 2 );
 			failPanel.graphics.endFill();
-			
-//			_centerLayer.y -= 50;
 		}
 		private function onStageResize( e:Event = null ):void
 		{
