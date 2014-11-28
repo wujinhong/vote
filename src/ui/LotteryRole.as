@@ -24,16 +24,15 @@ package ui
 		public static const IMAGE_WIDTH:Number = 0.8 * 512
 		public static const DURATION:Number = 8;
 		private var bitmap:Bitmap;
-		public function LotteryRole( index:int )
+		public function LotteryRole( index:int = -1 )
 		{
 			super();
 			UITool.removeChildren( user.container );
-			
 			addBitmap( index );
 		}
 		public function addBitmap( index:int ):void
 		{
-			var obj:Object = Lottery.lotteryData[ index ];
+			var obj:Object = ( -1 == index ) ? Lottery.winUser : Lottery.lotteryData[ index ];
 			bitmap = new Bitmap( ImageLoader.get().getBitmapData( obj.icon ) );
 			
 			UITool.removeChildren( user.container );

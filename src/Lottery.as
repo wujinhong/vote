@@ -127,6 +127,7 @@ package {
 		{
 			if( null == ret.data )
 			{
+				trace( "Lottery.onLotteryList:null == ret.data; " + ret.code );
 				return;
 			}
 			if( 0 != ret.code )
@@ -243,7 +244,7 @@ package {
 						_winer.addBitmap();
 						_winer.visible = true;
 					}
-					mainWall.stopRenderView();
+					mainWall.stopRenderView( true );
 					var params:Object = { barid:_barid, token:_token };
 					HttpMgr.get().post( URL3.winer, params, onResult2 );
 					_isLoading = true;
@@ -282,7 +283,7 @@ package {
 		}
 		private function roll():void
 		{
-			mainWall.renderView();
+			mainWall.renderView( true );
 			stage.addEventListener( KeyboardEvent.KEY_DOWN, showResult );
 			_loading.visible = false;
 			UITool.stopMovieClip( _loading );
@@ -316,7 +317,6 @@ package {
 			mainWall = new MainWall();
 			_roleLayer.addChild( mainWall );
 			mainWall.x = -MainWall.VIEW_WIDTH / 2;
-//			mainWall.width = mainWall.width / 2;
 			_winer = new Winer();
 			_layer.addChild( _winer );
 			_winer.visible = false;
