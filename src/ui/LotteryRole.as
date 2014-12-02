@@ -40,7 +40,7 @@ package ui
 			user.container.addChild( bitmap );
 			bitmap.width = bitmap.height = IMAGE_WIDTH;
 			bitmap.x = bitmap.y = -bitmap.width / 2;
-			user.nameTF.text = obj.nick;
+			user.nameTF.text = String( obj.nick );
 		}
 	}
 }

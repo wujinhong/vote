@@ -61,7 +61,6 @@ package
 		 *第三帧 33
 		 */		
 		public static const END_FRAME_INDEX:uint = 33;
-		private var _mouseDir:int;
 		private var _layer:Sprite;
 		private var _loadLength:int;
 		private var _length:int;

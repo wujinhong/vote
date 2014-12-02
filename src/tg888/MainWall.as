@@ -135,7 +135,10 @@ package tg888
 				return;
 			}
 			var letf:Number = radian % ( Math.PI * 2 );
-			showingIndex = Math.ceil( letf / anglePer );
+			var index:Number = letf / anglePer;
+			showingIndex = Math.floor( index ) + ( ( index % 1 > 0.5 ) ? 1 : 0 );
+			trace( "MainWall.stopRenderView( before ); index = " + index + "; showingIndex = " + showingIndex + ";" );
+			
 			var lotterRole:LotteryRole = new LotteryRole();
 			var bmd:BitmapData = UITool.getUIBitmapData( lotterRole );
 			

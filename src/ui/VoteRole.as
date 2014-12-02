@@ -20,7 +20,7 @@ package ui
 	{
 		public static const ROLE_WIDTH:Number = 444;
 		public static const ROLE_HEIGHT:Number = 650;
-		public static const DURATION:Number = 3;
+		public static const DURATION:Number = 2;
 		/**
 		 *60 
 		 */		
