@@ -1,4 +1,4 @@
-package tg888
+package lottery
 {
 	import flash.display.BitmapData;
 	import flash.display.Sprite;
@@ -134,19 +134,40 @@ package tg888
 			{
 				return;
 			}
+			stopAtWinner();
+		}
+		private function stopAtWinner():void
+		{
+			var found:Boolean = false;
+			for( var j:int = 0; j < Lottery.lotteryData.length; j++ ) 
+			{
+				if( Lottery.winUser.userid == Lottery.lotteryData[ j ].userid )
+				{
+					showingIndex = j;
+					radian = showingIndex * anglePer;
+					found = true;
+					break;
+				}
+			}
+			if( found )
+			{
+				radian -= speed;
+				render( null );
+				return;
+			}
+			
 			var letf:Number = radian % ( Math.PI * 2 );
 			var index:Number = letf / anglePer;
-			showingIndex = Math.floor( index ) + ( ( index % 1 > 0.5 ) ? 1 : 0 );
-			trace( "MainWall.stopRenderView( before ); index = " + index + "; showingIndex = " + showingIndex + ";" );
-			
+			showingIndex = Math.floor( index ) + ( ( index % 1 > 0.3 ) ? 1 : 0 );
+			radian = showingIndex * anglePer;
 			var lotterRole:LotteryRole = new LotteryRole();
 			var bmd:BitmapData = UITool.getUIBitmapData( lotterRole );
-			
 			var bmm:BitmapMaterial = new BitmapMaterial( bmd );
 			_planes[ showingIndex ].material = bmm;
+			radian -= speed;
 			render( null );
 		}
-		private function initPosition(p:WallPlane,c:int):void 
+		private function initPosition(p:WallPlane,c:int):void
 		{						
 			p.rotationY = ( -p.index * anglePer ) * ( 180 / Math.PI ) - 90;
 			p.x = Math.cos( p.index * anglePer ) * c;

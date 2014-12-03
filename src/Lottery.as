@@ -17,7 +17,7 @@ package {
 	import net.URL;
 	import net.URL3;
 	
-	import tg888.MainWall;
+	import lottery.MainWall;
 	
 	import ui.LotteryBackground;
 	import ui.LotteryFail;

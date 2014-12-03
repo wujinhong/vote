@@ -1,4 +1,4 @@
-﻿package tg888{
+﻿package lottery{
 	import org.papervision3d.core.proto.MaterialObject3D;
 	import org.papervision3d.objects.primitives.Plane;
 

@@ -1,4 +1,4 @@
-package tg888
+package lottery
 {
 	import flash.display.Bitmap;
 	import flash.display.BitmapData;
